@@ -4,7 +4,7 @@ import {
   findExistingInventoryModel,
   updateInventoryUnitsModel,
 } from "../models/inventoryModel.js";
-
+import { createTransactionModel } from "../models/transactionModel.js";
 export const getAllInventoryService = async () => {
   return await getAllInventoryModel();
 };
@@ -30,11 +30,27 @@ export const createInventoryService = async (data) => {
       updatedReceivedUnit,
       updatedAvailableUnit,
     );
-
+    await createTransactionModel({
+      inventory_id: existingInventory.id,
+      transaction_type: "RECEIVE",
+      units: data.received_unit,
+      issued_by: "System",
+      remarks: data.remarks,
+    });
     return {
       message: "Inventory updated successfully",
     };
   }
 
-  return await createInventoryModel(data);
+  const result = await createInventoryModel(data);
+
+  await createTransactionModel({
+    inventory_id: result.insertId,
+    transaction_type: "RECEIVE",
+    units: data.received_unit,
+    issued_by: "System",
+    remarks: data.remarks,
+  });
+
+  return result;
 };
