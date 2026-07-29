@@ -1,5 +1,4 @@
+import { getAllInventoryModel } from "../models/inventoryModel.js";
 export const getAllInventoryService = async () => {
-  return {
-    message: "Service Working",
-  };
+  return await getAllInventoryModel();
 };
