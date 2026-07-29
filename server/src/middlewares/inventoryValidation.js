@@ -7,7 +7,7 @@ export const validateCreateInventory = (req, res, next) => {
     blood_type,
     government_price,
     received_unit,
-    available_unit,
+    
     expiry_date,
   } = req.body;
   const validBloodGroups = [
@@ -65,9 +65,7 @@ if (expiryDate <= entryDate) {
   if (received_unit === undefined) {
     throw new ApiError(400, "Received unit is required");
   }
-    if (available_unit === undefined) {
-    throw new ApiError(400, "Available unit is required");
-  }
+   
 
 
   if (!expiry_date) {
