@@ -8,7 +8,10 @@ import {
 } from "../services/inventoryService.js";
 
 export const getAllInventory = asyncHandler(async (req, res) => {
-  const data = await getAllInventoryService();
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+
+  const data = await getAllInventoryService(page, limit);
 
   res.status(200).json({
     success: true,
