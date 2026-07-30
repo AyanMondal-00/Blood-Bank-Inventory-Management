@@ -26,3 +26,13 @@ export const createTransactionModel = async (data) => {
 
   return result;
 };
+
+export const getAllTransactionsModel = async () => {
+  const [rows] = await pool.query(`
+    SELECT t.*, i.blood_type, i.location 
+    FROM blood_transactions t 
+    LEFT JOIN blood_inventory i ON t.inventory_id = i.id 
+    ORDER BY t.created_at DESC
+  `);
+  return rows;
+};

@@ -68,3 +68,17 @@ export const getExpiringSoonCountModel = async () => {
     expiringSoonCount: Number(rows[0].expiringSoonCount || 0),
   };
 };
+
+export const getBloodGroupStatsModel = async () => {
+  const [rows] = await pool.query(`
+    SELECT 
+      blood_type, 
+      MAX(government_price) AS government_price, 
+      SUM(received_unit) AS totalReceived, 
+      SUM(available_unit) AS totalAvailable 
+    FROM blood_inventory 
+    GROUP BY blood_type
+    ORDER BY blood_type ASC
+  `);
+  return rows;
+};
