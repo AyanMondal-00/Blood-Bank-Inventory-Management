@@ -3,10 +3,18 @@ import {
   createInventoryModel,
   findExistingInventoryModel,
   updateInventoryUnitsModel,
+  findInventoryByIdModel,
+  updateAvailableUnitModel,
 } from "../models/inventoryModel.js";
 import { createTransactionModel } from "../models/transactionModel.js";
-export const getAllInventoryService = async () => {
-  return await getAllInventoryModel();
+
+import ApiError from "../utils/ApiError.js";
+
+export const getAllInventoryService = async (page, limit) => {
+  const offset = (page - 1) * limit;
+  console.log({ page, limit, offset });
+
+  return await getAllInventoryModel(limit, offset);
 };
 // export const createInventoryService = async (data) => {
 //   return await createInventoryModel(data);
@@ -53,4 +61,32 @@ export const createInventoryService = async (data) => {
   });
 
   return result;
+};
+export const issueBloodService = async (data) => {
+  const inventory = await findInventoryByIdModel(data.inventory_id);
+
+  if (!inventory) {
+    throw new ApiError(404, "Inventory not found");
+  }
+
+  console.log(inventory);
+  if (inventory.available_unit < data.issued_unit) {
+  throw new ApiError(400, "Insufficient stock");
+}
+const updatedAvailableUnit =
+  inventory.available_unit - data.issued_unit;
+
+await updateAvailableUnitModel(
+  inventory.id,
+  updatedAvailableUnit
+);
+await createTransactionModel({
+  inventory_id: inventory.id,
+  transaction_type: "ISSUE",
+  units: data.issued_unit,
+  issued_by: data.issued_by,
+  remarks: data.remarks,
+});{
+  return "Blood issued successfully";
+}
 };
