@@ -98,7 +98,7 @@ function InventoryTable({ data = [] }) {
 
                   {/* Price */}
                   <td className="py-4 px-6 text-right font-bold text-slate-800">
-                    {item.government_price.toLocaleString("en-US")} BDT
+                    {item.government_price.toLocaleString("en-US")} Rs
                   </td>
 
                   {/* Remarks */}

@@ -21,7 +21,7 @@ function TransactionTable({ data = [] }) {
     <div className="overflow-x-auto">
       <table className="w-full text-left border-collapse">
         <thead>
-          <tr className="bg-slate-50/70 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-wider">
+          <tr className="bg-slate-50/70 border-b border-slate-100 text-xs font-bold text-slate-800 uppercase tracking-wider">
             <th className="py-4 px-6">Timestamp</th>
             <th className="py-4 px-6">Type</th>
             <th className="py-4 px-6">Blood Type</th>

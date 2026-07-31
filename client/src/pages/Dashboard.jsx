@@ -3,7 +3,7 @@ import {
   MdRefresh, 
   MdWarning, 
   MdBloodtype, 
-  MdAttachMoney, 
+  MdCurrencyRupee, 
   MdAddCircle, 
   MdCheckCircle 
 } from "react-icons/md";
@@ -88,49 +88,51 @@ function Dashboard() {
             return (
               <div 
                 key={group.blood_type}
-                className={`bg-white border rounded-3xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md ${
-                  hasStock ? "border-rose-100/60" : "border-slate-100 opacity-75"
+                className={`bg-white border rounded-2xl p-4.5 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md ${
+                  hasStock ? "border-rose-100/60" : "border-slate-100 bg-slate-50/20"
                 }`}
               >
                 {/* Header section with Blood type badge and availability status */}
-                <div className="flex items-center justify-between mb-5">
-                  <span className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-rose-600 text-white font-black text-xl shadow-md shadow-rose-600/10">
+                <div className="flex items-center justify-between mb-3.5">
+                  <span className={`inline-flex items-center justify-center w-11 h-11 rounded-full bg-rose-600 text-white font-black text-lg shadow-md shadow-rose-600/10 ${
+                    hasStock ? "" : "opacity-40"
+                  }`}>
                     {group.blood_type}
                   </span>
-                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                  <span className={`px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-black ${
                     hasStock 
                       ? "bg-emerald-50 text-emerald-700 border border-emerald-100" 
-                      : "bg-slate-100 text-slate-500 border border-slate-200"
+                      : "bg-red-600 text-white border border-red-700 shadow-md"
                   }`}>
                     {hasStock ? "Available" : "Out of Stock"}
                   </span>
                 </div>
 
                 {/* Body section showing Prices and Units */}
-                <div className="space-y-3.5">
+                <div className={`space-y-2.5 ${hasStock ? "" : "opacity-40"}`}>
                   {/* Government Price */}
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-400 font-medium flex items-center gap-1">
-                      <MdAttachMoney className="text-base text-slate-400" />
+                    <span className="text-slate-800 font-medium flex items-center gap-1">
+                      <MdCurrencyRupee className="text-base text-slate-400" />
                       Govt Price:
                     </span>
-                    <span className="font-bold text-slate-800">{group.government_price} BDT</span>
+                    <span className="font-bold text-slate-800">{group.government_price} Rs</span>
                   </div>
 
                   {/* Available Units */}
-                  <div className="flex items-center justify-between text-sm border-t border-slate-50 pt-2.5">
-                    <span className="text-slate-400 font-medium flex items-center gap-1">
+                  <div className="flex items-center justify-between text-sm border-t border-slate-50 pt-2">
+                    <span className="text-slate-800 font-medium flex items-center gap-1">
                       <MdCheckCircle className="text-base text-emerald-500" />
                       Available Stock:
                     </span>
                     <span className={`font-black text-base ${hasStock ? "text-rose-600" : "text-slate-400"}`}>
                       {group.totalAvailable} Bags
-                    </span>
+                    </span>                                                            
                   </div>
 
                   {/* Total Received Units */}
-                  <div className="flex items-center justify-between text-sm border-t border-slate-50 pt-2.5">
-                    <span className="text-slate-400 font-medium flex items-center gap-1">
+                  <div className="flex items-center justify-between text-sm border-t border-slate-50 pt-2">
+                    <span className="text-slate-800 font-medium flex items-center gap-1">
                       <MdAddCircle className="text-base text-slate-400" />
                       Total Received:
                     </span>

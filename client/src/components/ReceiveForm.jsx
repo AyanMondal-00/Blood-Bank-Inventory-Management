@@ -3,7 +3,7 @@ import {
   MdAddCircle, 
   MdBloodtype, 
   MdLocationOn, 
-  MdAttachMoney, 
+  MdCurrencyRupee, 
   MdDateRange, 
   MdNote, 
   MdErrorOutline
@@ -160,10 +160,10 @@ function ReceiveForm({ onSubmitSuccess }) {
 
         {/* Government Price Input */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Government Price (BDT)</label>
+          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Government Price (Rs)</label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-              <MdAttachMoney className="text-xl" />
+              <MdCurrencyRupee className="text-xl" />
             </div>
             <input
               type="number"
