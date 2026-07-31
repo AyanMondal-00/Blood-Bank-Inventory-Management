@@ -33,7 +33,7 @@ function InventoryTable({ data = [] }) {
           <tr className="bg-slate-50/70 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-wider">
             <th className="py-4 px-6">Blood Type</th>
             <th className="py-4 px-6">Stock Status (Available/Total)</th>
-            <th className="py-4 px-6">Collection Location</th>
+            <th className="py-4 px-6">Received By</th>
             <th className="py-4 px-6">Entry Date</th>
             <th className="py-4 px-6">Expiry Status</th>
             <th className="py-4 px-6 text-right">Price</th>
@@ -75,8 +75,8 @@ function InventoryTable({ data = [] }) {
                   </td>
 
                   {/* Location */}
-                  <td className="py-4 px-6 text-slate-600 max-w-[150px] truncate" title={item.location}>
-                    {item.location}
+                  <td className="py-4 px-6 text-slate-600 max-w-[150px] truncate" title={item.received_by}>
+                    {item.received_by || "N/A"}
                   </td>
 
                   {/* Entry date */}

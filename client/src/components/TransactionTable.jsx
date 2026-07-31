@@ -26,8 +26,7 @@ function TransactionTable({ data = [] }) {
             <th className="py-4 px-6">Type</th>
             <th className="py-4 px-6">Blood Type</th>
             <th className="py-4 px-6 text-right">Units</th>
-            <th className="py-4 px-6">Location</th>
-            <th className="py-4 px-6">Operator / Issued By</th>
+            <th className="py-4 px-6">Recived / Issued By</th>
             <th className="py-4 px-6">Remarks</th>
           </tr>
         </thead>
@@ -46,12 +45,12 @@ function TransactionTable({ data = [] }) {
                     }`}>
                       {isReceive ? (
                         <>
-                          <MdArrowUpward className="text-sm" />
+                          <MdArrowDownward className="text-sm" />
                           RECEIVE
                         </>
                       ) : (
                         <>
-                          <MdArrowDownward className="text-sm" />
+                          <MdArrowUpward className="text-sm" />
                           ISSUE
                         </>
                       )}
@@ -66,9 +65,6 @@ function TransactionTable({ data = [] }) {
                     isReceive ? "text-emerald-600" : "text-rose-600"
                   }`}>
                     {isReceive ? "+" : "-"}{t.units} U
-                  </td>
-                  <td className="py-4 px-6 text-slate-600 max-w-[150px] truncate" title={t.location || "N/A"}>
-                    {t.location || "N/A"}
                   </td>
                   <td className="py-4 px-6 text-slate-600">{t.issued_by || "System"}</td>
                   <td className="py-4 px-6 text-slate-400 font-normal italic max-w-[200px] truncate" title={t.remarks}>

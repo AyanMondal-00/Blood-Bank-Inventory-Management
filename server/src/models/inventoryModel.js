@@ -6,7 +6,7 @@ export const getAllInventoryModel = async (limit, offset) => {
     SELECT
       id,
       entry_date,
-      location,
+      received_by,
       blood_type,
       government_price,
       received_unit,
@@ -27,7 +27,7 @@ export const getAllInventoryModel = async (limit, offset) => {
 export const createInventoryModel = async (data) => {
   const {
     entry_date,
-    location,
+    received_by,
     blood_type,
     government_price,
     received_unit, 
@@ -38,7 +38,7 @@ export const createInventoryModel = async (data) => {
   const [result] = await pool.query(
     `INSERT INTO blood_inventory (
   entry_date,
-  location,
+  received_by,
   blood_type,
   government_price,
   received_unit,
@@ -49,7 +49,7 @@ export const createInventoryModel = async (data) => {
 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     [
   entry_date,
-  location,
+  received_by,
   blood_type,
   government_price,
   received_unit,
@@ -63,7 +63,6 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
 };
 
 export const findExistingInventoryModel = async (
-  location,
   blood_type,
   expiry_date
 ) => {
@@ -72,12 +71,11 @@ export const findExistingInventoryModel = async (
   `
   SELECT *
   FROM blood_inventory
-  WHERE location = ?
-    AND blood_type = ?
+  WHERE blood_type = ?
     AND expiry_date = ?
   LIMIT 1
   `,
-  [location, blood_type, expiry_date]
+  [blood_type, expiry_date]
 );
 
 return rows[0];
@@ -127,6 +125,19 @@ export const updateAvailableUnitModel = async (
     WHERE id = ?
     `,
     [available_unit, id]
+  );
+
+  return result;
+};
+
+export const updateBloodPriceModel = async (blood_type, new_price) => {
+  const [result] = await pool.query(
+    `
+    UPDATE blood_inventory
+    SET government_price = ?
+    WHERE blood_type = ?
+    `,
+    [new_price, blood_type]
   );
 
   return result;

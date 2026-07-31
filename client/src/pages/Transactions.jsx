@@ -44,7 +44,7 @@ function Transactions() {
   // Filter logic
   const filteredTransactions = transactions.filter((t) => {
     const matchesSearch = 
-      (t.location?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+      (t.received_by?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
       (t.issued_by?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
       (t.remarks?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
     
@@ -91,14 +91,12 @@ function Transactions() {
           >
             <MdArrowBack className="text-xl" />
           </button>
-          <div>
-            <p className="text-xs text-slate-500 font-medium">Audit logs of all received and issued blood packages.</p>
-          </div>
+          
         </div>
 
         <button
           onClick={fetchTransactions}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-medium text-sm rounded-xl shadow-sm transition"
+          className="flex items-center gap-1 px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-medium text-sm rounded-xl shadow-sm transition"
         >
           <MdRefresh className="text-lg" />
           Refresh Logs

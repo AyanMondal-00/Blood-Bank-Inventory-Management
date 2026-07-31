@@ -5,6 +5,7 @@ import {
   getAllInventoryService,
   createInventoryService,
    issueBloodService,
+   updateBloodPriceService,
 } from "../services/inventoryService.js";
 
 export const getAllInventory = asyncHandler(async (req, res) => {
@@ -49,3 +50,17 @@ export const getAllInventoryController = async (req, res) => {
     )
   );
 };
+
+export const updateBloodPrice = asyncHandler(async (req, res) => {
+  const { blood_type, new_price } = req.body;
+  if (!blood_type || new_price === undefined || Number(new_price) < 0) {
+    res.status(400);
+    throw new Error("Invalid blood type or price");
+  }
+
+  const result = await updateBloodPriceService(blood_type, Number(new_price));
+
+  res.status(200).json(
+    new ApiResponse(200, "Blood price updated successfully", result)
+  );
+});

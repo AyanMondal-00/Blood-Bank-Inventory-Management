@@ -5,6 +5,7 @@ import {
   updateInventoryUnitsModel,
   findInventoryByIdModel,
   updateAvailableUnitModel,
+  updateBloodPriceModel,
 } from "../models/inventoryModel.js";
 import { createTransactionModel } from "../models/transactionModel.js";
 
@@ -22,7 +23,6 @@ export const getAllInventoryService = async (page, limit) => {
 
 export const createInventoryService = async (data) => {
   const existingInventory = await findExistingInventoryModel(
-    data.location,
     data.blood_type,
     data.expiry_date,
   );
@@ -42,7 +42,7 @@ export const createInventoryService = async (data) => {
       inventory_id: existingInventory.id,
       transaction_type: "RECEIVE",
       units: data.received_unit,
-      issued_by: "System",
+      issued_by: data.received_by,
       remarks: data.remarks,
     });
     return {
@@ -56,7 +56,7 @@ export const createInventoryService = async (data) => {
     inventory_id: result.insertId,
     transaction_type: "RECEIVE",
     units: data.received_unit,
-    issued_by: "System",
+    issued_by: data.received_by,
     remarks: data.remarks,
   });
 
@@ -89,4 +89,8 @@ await createTransactionModel({
 });{
   return "Blood issued successfully";
 }
+};
+
+export const updateBloodPriceService = async (blood_type, new_price) => {
+  return await updateBloodPriceModel(blood_type, new_price);
 };

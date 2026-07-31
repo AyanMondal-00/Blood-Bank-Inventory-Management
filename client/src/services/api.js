@@ -22,6 +22,7 @@ export const inventoryApi = {
   list: (page = 1, limit = 10) => apiRequest(`/inventory?page=${page}&limit=${limit}`),
   create: (payload) => apiRequest('/inventory', { method: 'POST', body: JSON.stringify(payload) }),
   issue: (payload) => apiRequest('/inventory/issue', { method: 'POST', body: JSON.stringify(payload) }),
+  updatePrice: (payload) => apiRequest('/inventory/price', { method: 'PUT', body: JSON.stringify(payload) }),
 }
 
 export const transactionApi = {

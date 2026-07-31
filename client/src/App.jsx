@@ -7,6 +7,7 @@ import Inventory from "./pages/Inventory";
 import ReceiveBlood from "./pages/ReceiveBlood";
 import IssueBlood from "./pages/IssueBlood";
 import Transactions from "./pages/Transactions";
+import UpdatePrice from "./pages/UpdatePrice";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="receive" element={<ReceiveBlood />} />
         <Route path="issue" element={<IssueBlood />} />
         <Route path="transactions" element={<Transactions />} />
+        <Route path="update-price" element={<UpdatePrice />} />
       </Route>
     </Routes>
   );

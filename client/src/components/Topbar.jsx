@@ -5,7 +5,8 @@ import {
   MdCalendarToday, 
   MdAdminPanelSettings,
   MdMenu,
-  MdMenuOpen
+  MdMenuOpen,
+  MdRefresh
 } from "react-icons/md";
 
 function Topbar({ isCollapsed, onToggle }) {
@@ -81,6 +82,15 @@ function Topbar({ isCollapsed, onToggle }) {
             <span>{formattedTime}</span>
           </div>
         </div>
+
+        {/* Refresh Page Button */}
+        <button
+          onClick={() => window.location.reload()}
+          className="p-1.5 hover:bg-slate-50 text-slate-500 hover:text-rose-600 border border-slate-200 hover:border-rose-250 rounded-lg shadow-sm transition-all duration-200 focus:outline-none flex items-center justify-center cursor-pointer"
+          title="Refresh Page"
+        >
+          <MdRefresh className="text-xl" />
+        </button>
 
         {/* User Profile */}
         <div className="flex items-center gap-3">

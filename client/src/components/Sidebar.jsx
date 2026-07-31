@@ -5,7 +5,8 @@ import {
   MdAddBox, 
   MdIndeterminateCheckBox, 
   MdHistory, 
-  MdBloodtype 
+  MdBloodtype,
+  MdCurrencyRupee
 } from "react-icons/md";
 
 const menuItems = [
@@ -28,6 +29,11 @@ const menuItems = [
     path: "/transactions",
     name: "Transaction Logs",
     icon: MdHistory,
+  },
+  {
+    path: "/update-price",
+    name: "Price Update",
+    icon: MdCurrencyRupee,
   },
 ];
 

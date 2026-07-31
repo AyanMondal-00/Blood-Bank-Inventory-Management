@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { 
-  MdAddCircle, 
-  MdBloodtype, 
-  MdLocationOn, 
-  MdCurrencyRupee, 
-  MdDateRange, 
-  MdNote, 
-  MdErrorOutline
+import {
+  MdAddCircle,
+  MdBloodtype,
+  MdPerson,
+  MdCurrencyRupee,
+  MdDateRange,
+  MdNote,
+  MdErrorOutline,
 } from "react-icons/md";
 import { inventoryApi } from "../services/api";
 
@@ -15,7 +15,7 @@ const BLOOD_TYPES = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 function ReceiveForm({ onSubmitSuccess }) {
   const [formData, setFormData] = useState({
     entry_date: new Date().toISOString().split("T")[0],
-    location: "",
+    received_by: "",
     blood_type: "",
     government_price: "",
     received_unit: "",
@@ -36,7 +36,7 @@ function ReceiveForm({ onSubmitSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Form validation checks
     if (!formData.blood_type) {
       setError("Please select a blood type.");
@@ -54,7 +54,7 @@ function ReceiveForm({ onSubmitSuccess }) {
     try {
       setLoading(true);
       setError(null);
-      
+
       const payload = {
         ...formData,
         received_unit: Number(formData.received_unit),
@@ -62,11 +62,11 @@ function ReceiveForm({ onSubmitSuccess }) {
       };
 
       await inventoryApi.create(payload);
-      
+
       // Clear Form state
       setFormData({
         entry_date: new Date().toISOString().split("T")[0],
-        location: "",
+        received_by: "",
         blood_type: "",
         government_price: "",
         received_unit: "",
@@ -79,7 +79,10 @@ function ReceiveForm({ onSubmitSuccess }) {
       }
     } catch (err) {
       console.error(err);
-      setError(err.message || "Failed to submit inventory update. Check backend connection.");
+      setError(
+        err.message ||
+          "Failed to submit inventory update. Check backend connection.",
+      );
     } finally {
       setLoading(false);
     }
@@ -97,7 +100,9 @@ function ReceiveForm({ onSubmitSuccess }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Blood Type dropdown */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Blood Type</label>
+          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+            Blood Type
+          </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
               <MdBloodtype className="text-xl" />
@@ -121,7 +126,9 @@ function ReceiveForm({ onSubmitSuccess }) {
 
         {/* Received Unit Input */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Quantity (Units/Bags)</label>
+          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+            Quantity (Units/Bags)
+          </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
               <MdAddCircle className="text-xl" />
@@ -139,28 +146,34 @@ function ReceiveForm({ onSubmitSuccess }) {
           </div>
         </div>
 
-        {/* Location Input */}
+        {/* Received By Input */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Source / Collection Location</label>
+          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+            Received By
+          </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-              <MdLocationOn className="text-xl" />
+              <MdPerson className="text-xl" />
             </div>
             <input
               type="text"
-              name="location"
-              value={formData.location}
+              name="received_by"
+              value={formData.received_by}
               onChange={handleChange}
-              placeholder="Enter Location"
+              placeholder="Enter Receiver Name (e.g. Dr. Kabir)"
               required
-              className="w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 font-medium text-sm"
+              className="w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700   
+  focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 font-   
+  medium text-sm"
             />
           </div>
         </div>
 
         {/* Government Price Input */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Government Price (Rs)</label>
+          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+            Government Price (Rs)
+          </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
               <MdCurrencyRupee className="text-xl" />
@@ -180,7 +193,9 @@ function ReceiveForm({ onSubmitSuccess }) {
 
         {/* Entry Date */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Collection / Entry Date</label>
+          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+            Collection / Entry Date
+          </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
               <MdDateRange className="text-xl" />
@@ -198,7 +213,9 @@ function ReceiveForm({ onSubmitSuccess }) {
 
         {/* Expiry Date */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Expiry Date</label>
+          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+            Expiry Date
+          </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
               <MdDateRange className="text-xl" />
@@ -217,7 +234,9 @@ function ReceiveForm({ onSubmitSuccess }) {
 
       {/* Remarks Textarea */}
       <div className="space-y-2">
-        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Remarks / Notes</label>
+        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+          Remarks / Notes
+        </label>
         <div className="relative">
           <div className="absolute top-3.5 left-0 pl-3.5 flex items-start pointer-events-none text-slate-400">
             <MdNote className="text-xl" />

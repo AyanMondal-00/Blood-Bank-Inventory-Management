@@ -3,7 +3,7 @@ import ApiError from "../utils/ApiError.js";
 export const validateCreateInventory = (req, res, next) => {
   const {
     entry_date,
-    location,
+    received_by,
     blood_type,
     government_price,
     received_unit,
@@ -50,8 +50,8 @@ if (expiryDate <= entryDate) {
     throw new ApiError(400, "Entry date is required");
   }
 
-  if (!location) {
-    throw new ApiError(400, "Location is required");
+  if (!received_by) {
+    throw new ApiError(400, "Received by field is required");
   }
 
   if (!blood_type) {

@@ -61,19 +61,7 @@ function Dashboard() {
   const groupStats = stats?.groupStats ?? [];
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Header and Refresh */}
-      <div className="flex items-center justify-between">
-    
-        <button 
-          onClick={fetchStats}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-medium text-sm rounded-xl shadow-sm transition duration-200"
-        >
-          <MdRefresh className="text-lg" />
-          Refresh Data
-        </button>
-      </div>
-
+    <div className="animate-fade-in pt-1">
       {/* Main Stock Grid */}
       {groupStats.length === 0 ? (
         <div className="bg-slate-50 border border-slate-200 rounded-2xl p-12 text-center max-w-xl mx-auto space-y-3">
@@ -93,13 +81,13 @@ function Dashboard() {
                 }`}
               >
                 {/* Header section with Blood type badge and availability status */}
-                <div className="flex items-center justify-between mb-3.5">
+                <div className="flex items-center justify-between mb-3">
                   <span className={`inline-flex items-center justify-center w-11 h-11 rounded-full bg-rose-600 text-white font-black text-lg shadow-md shadow-rose-600/10 ${
                     hasStock ? "" : "opacity-40"
                   }`}>
                     {group.blood_type}
                   </span>
-                  <span className={`px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-black ${
+                  <span className={`px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-extrabold ${
                     hasStock 
                       ? "bg-emerald-50 text-emerald-700 border border-emerald-100" 
                       : "bg-red-600 text-white border border-red-700 shadow-md"
@@ -111,35 +99,26 @@ function Dashboard() {
                 {/* Body section showing Prices and Units */}
                 <div className={`space-y-2.5 ${hasStock ? "" : "opacity-40"}`}>
                   {/* Government Price */}
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-800 font-medium flex items-center gap-1">
-                      <MdCurrencyRupee className="text-base text-slate-400" />
+                  <div className="flex items-center justify-between text-lg">
+                    <span className="text-slate-800 font-extrabold flex items-center gap-1.5">
+                      <MdCurrencyRupee className="text-xl text-slate-400" />
                       Govt Price:
                     </span>
-                    <span className="font-bold text-slate-800">{group.government_price} Rs</span>
+                    <span className="font-black text-slate-800 text-lg">{group.government_price} Rs</span>
                   </div>
 
                   {/* Available Units */}
-                  <div className="flex items-center justify-between text-sm border-t border-slate-50 pt-2">
-                    <span className="text-slate-800 font-medium flex items-center gap-1">
-                      <MdCheckCircle className="text-base text-emerald-500" />
+                  <div className="flex items-center justify-between text-lg border-t border-slate-50 pt-2">
+                    <span className="text-slate-800 font-extrabold flex items-center gap-1.5">
+                      <MdCheckCircle className="text-xl text-emerald-500" />
                       Available Stock:
                     </span>
-                    <span className={`font-black text-base ${hasStock ? "text-rose-600" : "text-slate-400"}`}>
+                    <span className={`font-black text-xl ${hasStock ? "text-rose-600" : "text-slate-400"}`}>
                       {group.totalAvailable} Bags
-                    </span>                                                            
+                    </span>
                   </div>
 
-                  {/* Total Received Units */}
-                  <div className="flex items-center justify-between text-sm border-t border-slate-50 pt-2">
-                    <span className="text-slate-800 font-medium flex items-center gap-1">
-                      <MdAddCircle className="text-base text-slate-400" />
-                      Total Received:
-                    </span>
-                    <span className="font-semibold text-slate-600">
-                      {group.totalReceived} Bags
-                    </span>
-                  </div>
+                  
                 </div>
               </div>
             );
