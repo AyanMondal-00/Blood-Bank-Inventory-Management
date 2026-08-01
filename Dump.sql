@@ -61,6 +61,8 @@ CREATE TABLE `blood_transactions` (
   `inventory_id` int NOT NULL,
   `transaction_type` enum('RECEIVE','ISSUE') NOT NULL,
   `units` int NOT NULL,
+  `total_price` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `expiry_date` date NOT NULL,
   `issued_by` varchar(100) NOT NULL,
   `remarks` text,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
@@ -76,7 +78,7 @@ CREATE TABLE `blood_transactions` (
 
 LOCK TABLES `blood_transactions` WRITE;
 /*!40000 ALTER TABLE `blood_transactions` DISABLE KEYS */;
-INSERT INTO `blood_transactions` VALUES (1,1,'RECEIVE',5,'System','','2026-07-31 17:13:05'),(2,1,'ISSUE',2,'Kamlesh Maity','','2026-07-31 17:14:03'),(3,2,'RECEIVE',9,'Spandan Koner ','','2026-07-31 17:21:09'),(4,2,'ISSUE',5,'Hassn Mondal','','2026-07-31 17:39:02');
+INSERT INTO `blood_transactions` VALUES (1,1,'RECEIVE',5,4800.00,'2026-09-16','System','','2026-07-31 17:13:05'),(2,1,'ISSUE',2,1920.00,'2026-09-16','Kamlesh Maity','','2026-07-31 17:14:03'),(3,2,'RECEIVE',9,5040.00,'2026-10-16','Spandan Koner ','','2026-07-31 17:21:09'),(4,2,'ISSUE',5,2800.00,'2026-10-16','Hassn Mondal','','2026-07-31 17:39:02');
 /*!40000 ALTER TABLE `blood_transactions` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

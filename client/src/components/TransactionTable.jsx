@@ -26,6 +26,8 @@ function TransactionTable({ data = [] }) {
             <th className="py-4 px-6">Type</th>
             <th className="py-4 px-6">Blood Type</th>
             <th className="py-4 px-6 text-right">Units</th>
+            <th className="py-4 px-6 text-right">Total Price</th>
+            <th className="py-4 px-6 text-center">Expiry Date</th>
             <th className="py-4 px-6">Recived / Issued By</th>
             <th className="py-4 px-6">Remarks</th>
           </tr>
@@ -66,6 +68,16 @@ function TransactionTable({ data = [] }) {
                   }`}>
                     {isReceive ? "+" : "-"}{t.units} U
                   </td>
+                  <td className="py-4 px-6 text-right font-bold text-slate-800">
+                    {Number(t.total_price || 0).toLocaleString("en-US")} Rs
+                  </td>
+                  <td className="py-4 px-6 text-center text-slate-500 font-mono text-xs">
+                    {t.expiry_date ? new Date(t.expiry_date).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric"
+                    }) : "-"}
+                  </td>
                   <td className="py-4 px-6 text-slate-600">{t.issued_by || "System"}</td>
                   <td className="py-4 px-6 text-slate-400 font-normal italic max-w-[200px] truncate" title={t.remarks}>
                     {t.remarks || "-"}
@@ -75,7 +87,7 @@ function TransactionTable({ data = [] }) {
             })
           ) : (
             <tr>
-              <td colSpan="7" className="py-12 px-6 text-center text-slate-400 font-normal">
+              <td colSpan="8" className="py-12 px-6 text-center text-slate-400 font-normal">
                 <MdHistory className="text-4xl text-slate-300 mx-auto mb-3" />
                 No transactions match your search/filter settings.
               </td>

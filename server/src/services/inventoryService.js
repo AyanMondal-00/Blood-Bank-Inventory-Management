@@ -42,6 +42,8 @@ export const createInventoryService = async (data) => {
       inventory_id: existingInventory.id,
       transaction_type: "RECEIVE",
       units: data.received_unit,
+      total_price: data.received_unit * Number(existingInventory.government_price),
+      expiry_date: existingInventory.expiry_date,
       issued_by: data.received_by,
       remarks: data.remarks,
     });
@@ -56,6 +58,8 @@ export const createInventoryService = async (data) => {
     inventory_id: result.insertId,
     transaction_type: "RECEIVE",
     units: data.received_unit,
+    total_price: data.received_unit * Number(data.government_price),
+    expiry_date: data.expiry_date,
     issued_by: data.received_by,
     remarks: data.remarks,
   });
@@ -84,6 +88,8 @@ await createTransactionModel({
   inventory_id: inventory.id,
   transaction_type: "ISSUE",
   units: data.issued_unit,
+  total_price: data.issued_unit * Number(inventory.government_price),
+  expiry_date: inventory.expiry_date,
   issued_by: data.issued_by,
   remarks: data.remarks,
 });{

@@ -5,7 +5,8 @@ import {
   MdSearch, 
   MdFilterList, 
   MdRefresh, 
-  MdWarning
+  MdWarning,
+  MdFileDownload
 } from "react-icons/md";
 import { transactionApi } from "../services/api";
 import TransactionTable from "../components/TransactionTable";
@@ -54,6 +55,77 @@ function Transactions() {
     return matchesSearch && matchesBloodType && matchesType;
   });
 
+  const handleExportToExcel = () => {
+    // Define headers
+    const headers = [
+      "Timestamp",
+      "Type",
+      "Blood Type",
+      "Units",
+      "Total Price",
+      "Expiry Date",
+      "Received/Issued By",
+      "Remarks"
+    ];
+
+    // Map data to rows
+    const rows = filteredTransactions.map((t) => {
+      const isReceive = t.transaction_type === "RECEIVE";
+      
+      // Format Timestamp as DD-MM-YYYY HH:mm AM/PM
+      const d = new Date(t.created_at);
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      let hours = d.getHours();
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      const formattedDate = `${day}-${month}-${year} ${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
+
+      // Format Expiry Date as DD-MM-YYYY
+      let expiry = "N/A";
+      if (t.expiry_date) {
+        const ed = new Date(t.expiry_date);
+        const eday = String(ed.getDate()).padStart(2, '0');
+        const emonth = String(ed.getMonth() + 1).padStart(2, '0');
+        const eyear = ed.getFullYear();
+        expiry = `${eday}-${emonth}-${eyear}`;
+      }
+
+      const totalVal = t.total_price ? `${t.total_price} Rs` : "0 Rs";
+      
+      return [
+        formattedDate,
+        t.transaction_type,
+        t.blood_type || "N/A",
+        `${isReceive ? "+" : "-"}${t.units} U`,
+        totalVal,
+        expiry,
+        t.issued_by || "System",
+        t.remarks || ""
+      ];
+    });
+
+    // Construct CSV content with UTF-8 BOM for perfect Excel compatibility
+    const csvContent = "\uFEFF" + [
+      headers.join(","),
+      ...rows.map(row => row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(","))
+    ].join("\n");
+
+    // Create Blob and download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `blood_transactions_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
@@ -94,13 +166,22 @@ function Transactions() {
           
         </div>
 
-        <button
-          onClick={fetchTransactions}
-          className="flex items-center gap-1 px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-medium text-sm rounded-xl shadow-sm transition"
-        >
-          <MdRefresh className="text-lg" />
-          Refresh Logs
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExportToExcel}
+            className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm rounded-xl shadow-sm transition duration-150"
+          >
+            <MdFileDownload className="text-lg" />
+            Export to Excel
+          </button>
+          <button
+            onClick={fetchTransactions}
+            className="flex items-center gap-1 px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-medium text-sm rounded-xl shadow-sm transition"
+          >
+            <MdRefresh className="text-lg" />
+            Refresh Logs
+          </button>
+        </div>
       </div>
 
       {/* Search & Filter Bar */}

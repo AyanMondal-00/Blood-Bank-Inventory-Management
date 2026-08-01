@@ -30,3 +30,5 @@ coverage/
 tmp/
 temp/
 .tip-images
+
+Dump.sql

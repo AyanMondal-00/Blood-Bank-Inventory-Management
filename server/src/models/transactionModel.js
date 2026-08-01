@@ -7,18 +7,22 @@ export const createTransactionModel = async (data) => {
     units,
     issued_by,
     remarks,
+    total_price,
+    expiry_date,
   } = data;
 
   const [result] = await pool.query(
     `
     INSERT INTO blood_transactions
-    (inventory_id, transaction_type, units, issued_by, remarks)
-    VALUES (?, ?, ?, ?, ?)
+    (inventory_id, transaction_type, units, total_price, expiry_date, issued_by, remarks)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
     `,
     [
       inventory_id,
       transaction_type,
       units,
+      total_price,
+      expiry_date,
       issued_by,
       remarks,
     ]
