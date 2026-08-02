@@ -1,3 +1,4 @@
+import pool from "../config/db.js";
 import {
   getAllInventoryModel,
   createInventoryModel,
@@ -23,79 +24,118 @@ export const getAllInventoryService = async (page, limit) => {
 // };
 
 export const createInventoryService = async (data) => {
-  const existingInventory = await findExistingInventoryModel(
-    data.blood_type,
-    data.expiry_date,
-  );
-  if (existingInventory) {
-    const updatedReceivedUnit =
-      existingInventory.received_unit + data.received_unit;
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
 
-    const updatedAvailableUnit =
-      existingInventory.available_unit + data.received_unit;
-
-    await updateInventoryUnitsModel(
-      existingInventory.id,
-      updatedReceivedUnit,
-      updatedAvailableUnit,
+    const existingInventory = await findExistingInventoryModel(
+      data.blood_type,
+      data.expiry_date,
+      connection
     );
-    await createTransactionModel({
-      inventory_id: existingInventory.id,
-      transaction_type: "RECEIVE",
-      units: data.received_unit,
-      total_price: data.received_unit * Number(existingInventory.government_price),
-      expiry_date: existingInventory.expiry_date,
-      issued_by: data.received_by,
-      remarks: data.remarks,
-    });
-    return {
-      message: "Inventory updated successfully",
-    };
+
+    if (existingInventory) {
+      const updatedReceivedUnit =
+        existingInventory.received_unit + data.received_unit;
+
+      const updatedAvailableUnit =
+        existingInventory.available_unit + data.received_unit;
+
+      await updateInventoryUnitsModel(
+        existingInventory.id,
+        updatedReceivedUnit,
+        updatedAvailableUnit,
+        connection
+      );
+
+      await createTransactionModel(
+        {
+          inventory_id: existingInventory.id,
+          transaction_type: "RECEIVE",
+          units: data.received_unit,
+          total_price: data.received_unit * Number(existingInventory.government_price),
+          expiry_date: existingInventory.expiry_date,
+          issued_by: data.received_by,
+          remarks: data.remarks,
+        },
+        connection
+      );
+
+      await connection.commit();
+      return {
+        message: "Inventory updated successfully",
+      };
+    }
+
+    const result = await createInventoryModel(data, connection);
+
+    await createTransactionModel(
+      {
+        inventory_id: result.insertId,
+        transaction_type: "RECEIVE",
+        units: data.received_unit,
+        total_price: data.received_unit * Number(data.government_price),
+        expiry_date: data.expiry_date,
+        issued_by: data.received_by,
+        remarks: data.remarks,
+      },
+      connection
+    );
+
+    await connection.commit();
+    return result;
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
   }
-
-  const result = await createInventoryModel(data);
-
-  await createTransactionModel({
-    inventory_id: result.insertId,
-    transaction_type: "RECEIVE",
-    units: data.received_unit,
-    total_price: data.received_unit * Number(data.government_price),
-    expiry_date: data.expiry_date,
-    issued_by: data.received_by,
-    remarks: data.remarks,
-  });
-
-  return result;
 };
 export const issueBloodService = async (data) => {
-  const inventory = await findInventoryByIdModel(data.inventory_id);
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
 
-  if (!inventory) {
-    throw new ApiError(404, "Inventory not found");
+    const inventory = await findInventoryByIdModel(data.inventory_id, connection);
+
+    if (!inventory) {
+      throw new ApiError(404, "Inventory not found");
+    }
+
+    if (inventory.available_unit < data.issued_unit) {
+      throw new ApiError(400, "Insufficient stock");
+    }
+
+    const updatedAvailableUnit =
+      inventory.available_unit - data.issued_unit;
+
+    await updateAvailableUnitModel(
+      inventory.id,
+      updatedAvailableUnit,
+      connection
+    );
+
+    await createTransactionModel(
+      {
+        inventory_id: inventory.id,
+        transaction_type: "ISSUE",
+        units: data.issued_unit,
+        total_price: data.issued_unit * Number(inventory.government_price),
+        expiry_date: inventory.expiry_date,
+        issued_by: data.issued_by,
+        remarks: data.remarks,
+      },
+      connection
+    );
+
+    await connection.commit();
+    return "Blood issued successfully";
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
   }
-
-  console.log(inventory);
-  if (inventory.available_unit < data.issued_unit) {
-  throw new ApiError(400, "Insufficient stock");
-}
-const updatedAvailableUnit =
-  inventory.available_unit - data.issued_unit;
-
-await updateAvailableUnitModel(
-  inventory.id,
-  updatedAvailableUnit
-);
-await createTransactionModel({
-  inventory_id: inventory.id,
-  transaction_type: "ISSUE",
-  units: data.issued_unit,
-  total_price: data.issued_unit * Number(inventory.government_price),
-  expiry_date: inventory.expiry_date,
-  issued_by: data.issued_by,
-  remarks: data.remarks,
-});{
-  return "Blood issued successfully";
-}
 };
 
 export const getBloodPricesService = async () => {

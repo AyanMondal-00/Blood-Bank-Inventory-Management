@@ -1,7 +1,7 @@
 import pool from "../config/db.js";
 
-export const getAllInventoryModel = async (limit, offset) => {
-  const [rows] = await pool.query(
+export const getAllInventoryModel = async (limit, offset, connection = pool) => {
+  const [rows] = await connection.query(
     `
     SELECT
       id,
@@ -24,7 +24,7 @@ export const getAllInventoryModel = async (limit, offset) => {
 
   return rows;
 };
-export const createInventoryModel = async (data) => {
+export const createInventoryModel = async (data, connection = pool) => {
   const {
     entry_date,
     received_by,
@@ -35,7 +35,7 @@ export const createInventoryModel = async (data) => {
     remarks,
   } = data;
 
-  const [result] = await pool.query(
+  const [result] = await connection.query(
     `INSERT INTO blood_inventory (
   entry_date,
   received_by,
@@ -64,10 +64,11 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
 
 export const findExistingInventoryModel = async (
   blood_type,
-  expiry_date
+  expiry_date,
+  connection = pool
 ) => {
 
-  const [rows] = await pool.query(
+  const [rows] = await connection.query(
   `
   SELECT *
   FROM blood_inventory
@@ -85,9 +86,10 @@ return rows[0];
 export const updateInventoryUnitsModel = async (
   id,
   received_unit,
-  available_unit
+  available_unit,
+  connection = pool
 ) => {
-  const [result] = await pool.query(
+  const [result] = await connection.query(
     `
     UPDATE blood_inventory
     SET
@@ -101,8 +103,8 @@ export const updateInventoryUnitsModel = async (
   return result;
 };
 
-export const findInventoryByIdModel = async (id) => {
-  const [rows] = await pool.query(
+export const findInventoryByIdModel = async (id, connection = pool) => {
+  const [rows] = await connection.query(
     `
     SELECT *
     FROM blood_inventory
@@ -116,9 +118,10 @@ export const findInventoryByIdModel = async (id) => {
 };
 export const updateAvailableUnitModel = async (
   id,
-  available_unit
+  available_unit,
+  connection = pool
 ) => {
-  const [result] = await pool.query(
+  const [result] = await connection.query(
     `
     UPDATE blood_inventory
     SET available_unit = ?
@@ -130,8 +133,8 @@ export const updateAvailableUnitModel = async (
   return result;
 };
 
-export const getBloodPricesModel = async () => {
-  const [rows] = await pool.query(
+export const getBloodPricesModel = async (connection = pool) => {
+  const [rows] = await connection.query(
     `
     SELECT blood_type, price, updated_at
     FROM blood_prices
@@ -141,9 +144,9 @@ export const getBloodPricesModel = async () => {
   return rows;
 };
 
-export const updateBloodPriceModel = async (blood_type, new_price) => {
+export const updateBloodPriceModel = async (blood_type, new_price, connection = pool) => {
   // Update standard price in blood_prices table (handles insert or update)
-  await pool.query(
+  await connection.query(
     `
     INSERT INTO blood_prices (blood_type, price)
     VALUES (?, ?)
@@ -153,7 +156,7 @@ export const updateBloodPriceModel = async (blood_type, new_price) => {
   );
 
   // Update blood_inventory so that current stock shows the updated price
-  const [result] = await pool.query(
+  const [result] = await connection.query(
     `
     UPDATE blood_inventory
     SET government_price = ?

@@ -1,7 +1,7 @@
 import express from "express";
 import { getAllTransactionsModel } from "../models/transactionModel.js";
 import asyncHandler from "../utils/asyncHandler.js";
-import ApiResponse from "../utils/ApiResponse.js";
+import ApiResponse from "../utils/apiResponse.js";
 
 const router = express.Router();
 

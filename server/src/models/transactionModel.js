@@ -1,6 +1,6 @@
 import pool from "../config/db.js";
 
-export const createTransactionModel = async (data) => {
+export const createTransactionModel = async (data, connection = pool) => {
   const {
     inventory_id,
     transaction_type,
@@ -11,7 +11,7 @@ export const createTransactionModel = async (data) => {
     expiry_date,
   } = data;
 
-  const [result] = await pool.query(
+  const [result] = await connection.query(
     `
     INSERT INTO blood_transactions
     (inventory_id, transaction_type, units, total_price, expiry_date, issued_by, remarks)

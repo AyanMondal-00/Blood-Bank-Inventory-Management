@@ -36,6 +36,7 @@ function ReceiveForm({ onSubmitSuccess }) {
         }
       } catch (err) {
         console.error("Error fetching prices:", err);
+        setError("Failed to fetch government prices. Make sure backend is running.");
       }
     };
     fetchPrices();

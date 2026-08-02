@@ -1,6 +1,6 @@
 import { getDashboardService } from "../services/dashboardService.js";
 import asyncHandler from "../utils/asyncHandler.js";
-import ApiResponse from "../utils/ApiResponse.js";
+import ApiResponse from "../utils/apiResponse.js";
 
 export const getDashboard = asyncHandler(async (req, res) => {
   const data = await getDashboardService();
