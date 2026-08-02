@@ -4,8 +4,9 @@ import ApiResponse from "../utils/apiResponse.js";
 import {
   getAllInventoryService,
   createInventoryService,
-   issueBloodService,
-   updateBloodPriceService,
+  issueBloodService,
+  updateBloodPriceService,
+  getBloodPricesService,
 } from "../services/inventoryService.js";
 
 export const getAllInventory = asyncHandler(async (req, res) => {
@@ -50,6 +51,14 @@ export const getAllInventoryController = async (req, res) => {
     )
   );
 };
+
+export const getBloodPrices = asyncHandler(async (req, res) => {
+  const result = await getBloodPricesService();
+
+  res.status(200).json(
+    new ApiResponse(200, "Blood prices fetched successfully", result)
+  );
+});
 
 export const updateBloodPrice = asyncHandler(async (req, res) => {
   const { blood_type, new_price } = req.body;

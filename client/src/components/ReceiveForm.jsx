@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   MdAddCircle,
   MdBloodtype,
@@ -25,6 +25,33 @@ function ReceiveForm({ onSubmitSuccess }) {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [prices, setPrices] = useState([]);
+
+  useEffect(() => {
+    const fetchPrices = async () => {
+      try {
+        const response = await inventoryApi.getPrices();
+        if (response && response.data) {
+          setPrices(response.data);
+        }
+      } catch (err) {
+        console.error("Error fetching prices:", err);
+      }
+    };
+    fetchPrices();
+  }, []);
+
+  const handleBloodTypeChange = (e) => {
+    const selectedType = e.target.value;
+    const foundPriceObj = prices.find((p) => p.blood_type === selectedType);
+    const selectedPrice = foundPriceObj ? foundPriceObj.price : "";
+
+    setFormData((prev) => ({
+      ...prev,
+      blood_type: selectedType,
+      government_price: selectedPrice,
+    }));
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -44,6 +71,10 @@ function ReceiveForm({ onSubmitSuccess }) {
     }
     if (Number(formData.received_unit) <= 0) {
       setError("Received units must be a positive number.");
+      return;
+    }
+    if (Number(formData.received_unit) > 3000) {
+      setError("Cannot enter more than 3000 bags at a single time.");
       return;
     }
     if (Number(formData.government_price) < 0) {
@@ -91,9 +122,24 @@ function ReceiveForm({ onSubmitSuccess }) {
   return (
     <form onSubmit={handleSubmit} className="p-8 space-y-6">
       {error && (
-        <div className="bg-rose-50 border border-rose-150 rounded-xl p-4 flex items-center gap-3 text-rose-700 text-sm">
-          <MdErrorOutline className="text-xl shrink-0" />
-          <span>{error}</span>
+        <div 
+          style={{ animation: 'shake 0.4s ease-in-out' }}
+          className="bg-gradient-to-r from-rose-50 to-rose-100/50 border border-rose-200 rounded-2xl p-5 flex items-start gap-4 text-rose-800 text-sm shadow-sm border-l-4 border-l-rose-600 transition"
+        >
+          <style>{`
+            @keyframes shake {
+              0%, 100% { transform: translateX(0); }
+              10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+              20%, 40%, 60%, 80% { transform: translateX(5px); }
+            }
+          `}</style>
+          <div className="p-1 bg-rose-500 text-white rounded-lg animate-pulse shrink-0">
+            <MdErrorOutline className="text-lg" />
+          </div>
+          <div className="space-y-0.5">
+            <span className="font-extrabold text-rose-900 block text-xs uppercase tracking-wider">Validation Alert</span>
+            <span className="text-rose-700 font-semibold text-sm">{error}</span>
+          </div>
         </div>
       )}
 
@@ -110,7 +156,7 @@ function ReceiveForm({ onSubmitSuccess }) {
             <select
               name="blood_type"
               value={formData.blood_type}
-              onChange={handleChange}
+              onChange={handleBloodTypeChange}
               required
               className="w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 appearance-none font-semibold text-sm"
             >
@@ -138,10 +184,12 @@ function ReceiveForm({ onSubmitSuccess }) {
               name="received_unit"
               value={formData.received_unit}
               onChange={handleChange}
+              onWheel={(e) => e.target.blur()}
               placeholder="e.g. 5"
               required
               min="1"
-              className="w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 font-medium text-sm"
+              max="3000"
+              className="w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 font-medium text-sm appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&]:moz-appearance-textfield"
             />
           </div>
         </div>
@@ -182,11 +230,10 @@ function ReceiveForm({ onSubmitSuccess }) {
               type="number"
               name="government_price"
               value={formData.government_price}
-              onChange={handleChange}
-              placeholder="e.g. 500"
+              readOnly
+              placeholder="Select blood group first"
               required
-              min="0"
-              className="w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 font-medium text-sm"
+              className="w-full pl-11 pr-4 py-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed focus:outline-none transition duration-200 font-semibold text-sm appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&]:moz-appearance-textfield"
             />
           </div>
         </div>

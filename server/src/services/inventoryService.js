@@ -6,6 +6,7 @@ import {
   findInventoryByIdModel,
   updateAvailableUnitModel,
   updateBloodPriceModel,
+  getBloodPricesModel,
 } from "../models/inventoryModel.js";
 import { createTransactionModel } from "../models/transactionModel.js";
 
@@ -95,6 +96,10 @@ await createTransactionModel({
 });{
   return "Blood issued successfully";
 }
+};
+
+export const getBloodPricesService = async () => {
+  return await getBloodPricesModel();
 };
 
 export const updateBloodPriceService = async (blood_type, new_price) => {

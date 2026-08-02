@@ -72,13 +72,14 @@ export const getExpiringSoonCountModel = async () => {
 export const getBloodGroupStatsModel = async () => {
   const [rows] = await pool.query(`
     SELECT 
-      blood_type, 
-      MAX(government_price) AS government_price, 
-      SUM(received_unit) AS totalReceived, 
-      SUM(available_unit) AS totalAvailable 
-    FROM blood_inventory 
-    GROUP BY blood_type
-    ORDER BY blood_type ASC
+      bp.blood_type, 
+      bp.price AS government_price, 
+      COALESCE(SUM(bi.received_unit), 0) AS totalReceived, 
+      COALESCE(SUM(bi.available_unit), 0) AS totalAvailable 
+    FROM blood_prices bp
+    LEFT JOIN blood_inventory bi ON bp.blood_type = bi.blood_type
+    GROUP BY bp.blood_type, bp.price
+    ORDER BY bp.blood_type ASC
   `);
   return rows;
 };

@@ -6,7 +6,11 @@ import {
   MdFilterList, 
   MdRefresh, 
   MdWarning,
-  MdFileDownload
+  MdFileDownload,
+  MdTune,
+  MdDateRange,
+  MdCurrencyRupee,
+  MdClear
 } from "react-icons/md";
 import { transactionApi } from "../services/api";
 import TransactionTable from "../components/TransactionTable";
@@ -23,6 +27,23 @@ function Transactions() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBloodType, setSelectedBloodType] = useState("");
   const [selectedType, setSelectedType] = useState(""); // "", "RECEIVE", "ISSUE"
+
+  // Advanced Filter State
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setSelectedBloodType("");
+    setSelectedType("");
+    setMinPrice("");
+    setMaxPrice("");
+    setStartDate("");
+    setEndDate("");
+  };
 
   const fetchTransactions = async () => {
     try {
@@ -42,18 +63,6 @@ function Transactions() {
     fetchTransactions();
   }, []);
 
-  // Filter logic
-  const filteredTransactions = transactions.filter((t) => {
-    const matchesSearch = 
-      (t.received_by?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-      (t.issued_by?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-      (t.remarks?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
-    
-    const matchesBloodType = selectedBloodType === "" || t.blood_type === selectedBloodType;
-    const matchesType = selectedType === "" || t.transaction_type === selectedType;
-
-    return matchesSearch && matchesBloodType && matchesType;
-  });
 
   const handleExportToExcel = () => {
     // Define headers
@@ -126,6 +135,66 @@ function Transactions() {
     document.body.removeChild(link);
   };
 
+  // Filter logic (Advanced)
+  const filteredTransactions = transactions.filter((t) => {
+    const matchesSearch = 
+      (t.received_by?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+      (t.issued_by?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+      (t.remarks?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
+    
+    const matchesBloodType = selectedBloodType === "" || t.blood_type === selectedBloodType;
+    const matchesType = selectedType === "" || t.transaction_type === selectedType;
+
+    // Advanced Price range filter
+    const tPrice = Number(t.total_price || 0);
+    const matchesMinPrice = minPrice === "" || tPrice >= Number(minPrice);
+    const matchesMaxPrice = maxPrice === "" || tPrice <= Number(maxPrice);
+
+    // Advanced Date range filter
+    let matchesDate = true;
+    if (startDate || endDate) {
+      const transDate = new Date(t.created_at);
+      transDate.setHours(0, 0, 0, 0);
+
+      if (startDate) {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        if (transDate < start) matchesDate = false;
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(0, 0, 0, 0);
+        if (transDate > end) matchesDate = false;
+      }
+    }
+
+    return matchesSearch && matchesBloodType && matchesType && matchesMinPrice && matchesMaxPrice && matchesDate;
+  });
+
+  // Calculate live summary stats
+  const stats = filteredTransactions.reduce(
+    (acc, t) => {
+      const price = Number(t.total_price || 0);
+      acc.total += price;
+      if (t.transaction_type === "RECEIVE") {
+        acc.received += price;
+      } else if (t.transaction_type === "ISSUE") {
+        acc.issued += price;
+      }
+      return acc;
+    },
+    { total: 0, received: 0, issued: 0 }
+  );
+
+  const hasActiveFilters = 
+    searchTerm !== "" || 
+    selectedBloodType !== "" || 
+    selectedType !== "" || 
+    minPrice !== "" || 
+    maxPrice !== "" || 
+    startDate !== "" || 
+    endDate !== "";
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
@@ -168,6 +237,17 @@ function Transactions() {
 
         <div className="flex items-center gap-2">
           <button
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className={`flex items-center gap-1.5 px-4 py-2 border rounded-xl font-medium text-sm transition duration-150 ${
+              showAdvanced 
+                ? "bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100" 
+                : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm"
+            }`}
+          >
+            <MdTune className="text-lg" />
+            {showAdvanced ? "Hide Filters" : "Advanced Filters"}
+          </button>
+          <button
             onClick={handleExportToExcel}
             className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm rounded-xl shadow-sm transition duration-150"
           >
@@ -185,52 +265,164 @@ function Transactions() {
       </div>
 
       {/* Search & Filter Bar */}
-      <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Search */}
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-            <MdSearch className="text-xl" />
+      <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Search */}
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <MdSearch className="text-xl" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search location, remarks, issuer..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 font-medium"
+            />
           </div>
-          <input
-            type="text"
-            placeholder="Search location, remarks, issuer..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 font-medium"
-          />
+
+          {/* Blood Type Filter */}
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <MdFilterList className="text-xl" />
+            </div>
+            <select
+              value={selectedBloodType}
+              onChange={(e) => setSelectedBloodType(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 font-medium appearance-none"
+            >
+              <option value="">All Blood Groups</option>
+              {BLOOD_TYPES.map((type) => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Type Filter (RECEIVE / ISSUE) */}
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <MdFilterList className="text-xl" />
+            </div>
+            <select
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 font-medium appearance-none"
+            >
+              <option value="">All Transactions</option>
+              <option value="RECEIVE">Receive Stock (+)</option>
+              <option value="ISSUE">Issue Stock (-)</option>
+            </select>
+          </div>
         </div>
 
-        {/* Blood Type Filter */}
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-            <MdFilterList className="text-xl" />
-          </div>
-          <select
-            value={selectedBloodType}
-            onChange={(e) => setSelectedBloodType(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 font-medium appearance-none"
-          >
-            <option value="">All Blood Groups</option>
-            {BLOOD_TYPES.map((type) => (
-              <option key={type} value={type}>{type}</option>
-            ))}
-          </select>
-        </div>
+        {/* Advanced Filters Section */}
+        {showAdvanced && (
+          <div className="pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 animate-slide-down">
+            {/* Start Date */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Start Date</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <MdDateRange className="text-lg" />
+                </div>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition font-semibold text-slate-700"
+                />
+              </div>
+            </div>
 
-        {/* Type Filter (RECEIVE / ISSUE) */}
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-            <MdFilterList className="text-xl" />
+            {/* End Date */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">End Date</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <MdDateRange className="text-lg" />
+                </div>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition font-semibold text-slate-700"
+                />
+              </div>
+            </div>
+
+            {/* Min Price */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Min Value (Rs)</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <MdCurrencyRupee className="text-lg" />
+                </div>
+                <input
+                  type="number"
+                  placeholder="Min value"
+                  value={minPrice}
+                  onWheel={(e) => e.target.blur()}
+                  onChange={(e) => setMinPrice(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition font-semibold text-slate-700 appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&]:moz-appearance-textfield"
+                />
+              </div>
+            </div>
+
+            {/* Max Price */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Max Value (Rs)</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <MdCurrencyRupee className="text-lg" />
+                </div>
+                <input
+                  type="number"
+                  placeholder="Max value"
+                  value={maxPrice}
+                  onWheel={(e) => e.target.blur()}
+                  onChange={(e) => setMaxPrice(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition font-semibold text-slate-700 appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&]:moz-appearance-textfield"
+                />
+              </div>
+            </div>
+
+            {/* Clear Filter button */}
+            {hasActiveFilters && (
+              <div className="sm:col-span-2 md:col-span-4 flex justify-end pt-2">
+                <button
+                  onClick={handleClearFilters}
+                  className="flex items-center gap-1 text-rose-600 hover:text-rose-700 text-xs font-bold transition cursor-pointer"
+                >
+                  <MdClear className="text-sm" />
+                  Clear All Filters
+                </button>
+              </div>
+            )}
           </div>
-          <select
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 font-medium appearance-none"
-          >
-            <option value="">All Transactions</option>
-            <option value="RECEIVE">Receive Stock (+)</option>
-            <option value="ISSUE">Issue Stock (-)</option>
-          </select>
+        )}
+      </div>
+
+      {/* Live Business Calculations Summary */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {/* Total Value */}
+        <div className="bg-white border border-slate-100 p-5 rounded-2xl shadow-sm flex flex-col justify-between hover:border-slate-200 transition">
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Value</span>
+          <span className="text-xl font-black text-slate-800 mt-1">{stats.total.toLocaleString("en-US")} Rs</span>
+        </div>
+        {/* Total Received Value */}
+        <div className="bg-white border border-slate-100 p-5 rounded-2xl shadow-sm flex flex-col justify-between hover:border-slate-200 transition">
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Received Value</span>
+          <span className="text-xl font-black text-emerald-600 mt-1">{stats.received.toLocaleString("en-US")} Rs</span>
+        </div>
+        {/* Total Issued Value */}
+        <div className="bg-white border border-slate-100 p-5 rounded-2xl shadow-sm flex flex-col justify-between hover:border-slate-200 transition">
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Issued Value</span>
+          <span className="text-xl font-black text-rose-600 mt-1">{stats.issued.toLocaleString("en-US")} Rs</span>
+        </div>
+        {/* Log Count */}
+        <div className="bg-white border border-slate-100 p-5 rounded-2xl shadow-sm flex flex-col justify-between hover:border-slate-200 transition">
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Filtered Records</span>
+          <span className="text-xl font-black text-slate-700 mt-1">{filteredTransactions.length} Logs</span>
         </div>
       </div>
 

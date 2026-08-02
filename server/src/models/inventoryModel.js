@@ -130,7 +130,29 @@ export const updateAvailableUnitModel = async (
   return result;
 };
 
+export const getBloodPricesModel = async () => {
+  const [rows] = await pool.query(
+    `
+    SELECT blood_type, price, updated_at
+    FROM blood_prices
+    ORDER BY blood_type ASC
+    `
+  );
+  return rows;
+};
+
 export const updateBloodPriceModel = async (blood_type, new_price) => {
+  // Update standard price in blood_prices table (handles insert or update)
+  await pool.query(
+    `
+    INSERT INTO blood_prices (blood_type, price)
+    VALUES (?, ?)
+    ON DUPLICATE KEY UPDATE price = ?
+    `,
+    [blood_type, new_price, new_price]
+  );
+
+  // Update blood_inventory so that current stock shows the updated price
   const [result] = await pool.query(
     `
     UPDATE blood_inventory
