@@ -297,8 +297,8 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
                 onClick={handleAutoSelectFIFO}
                 className="flex items-center gap-1.5 px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 font-extrabold text-[10px] rounded-xl border border-rose-100 uppercase transition duration-150 shadow-sm shadow-rose-600/5"
               >
-                <MdAutoAwesome className="text-sm" />
-                Select Recommended (FIFO)
+                <MdAutoAwesome className="text-base" />
+                
               </button>
             )}
           </div>
@@ -383,13 +383,9 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
               </div>
 
               {/* FIFO Hint Footer */}
-              <div className="px-6 py-3 bg-slate-50/60 border-t border-slate-200 flex items-center justify-between text-[9px] text-slate-400 font-bold tracking-wider">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
-                  Soonest-to-expire blood is always placed at the top (FEFO standard).
-                </span>
-                <span className="bg-slate-200 text-slate-600 px-2 py-0.5 rounded uppercase text-[8px] font-extrabold">FEFO SORTED</span>
-              </div>
+              {/* <div className="px-6 py-3 bg-slate-50/60 border-t border-slate-200 flex items-center justify-between text-[9px] text-slate-400 font-bold tracking-wider">
+                
+              </div> */}
             </div>
           )}
         </div>

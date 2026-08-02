@@ -136,7 +136,7 @@ function UpdatePrice() {
           </button>
           <div>
             <h1 className="text-2xl font-black text-slate-800 tracking-tight">Government Price Settings</h1>
-            <p className="text-xs font-semibold text-slate-500">Configure standardized government rates for all blood groups</p>
+           
           </div>
         </div>
         <button
