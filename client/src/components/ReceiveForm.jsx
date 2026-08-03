@@ -9,10 +9,12 @@ import {
   MdErrorOutline,
 } from "react-icons/md";
 import { inventoryApi } from "../services/api";
+import { useAuth } from "../hooks/useAuth";
 
 const BLOOD_TYPES = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 function ReceiveForm({ onSubmitSuccess }) {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     entry_date: new Date().toISOString().split("T")[0],
     received_by: "",
@@ -41,6 +43,15 @@ function ReceiveForm({ onSubmitSuccess }) {
     };
     fetchPrices();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        received_by: `${user.first_name} ${user.last_name}`,
+      }));
+    }
+  }, [user]);
 
   const handleBloodTypeChange = (e) => {
     const selectedType = e.target.value;
@@ -98,7 +109,7 @@ function ReceiveForm({ onSubmitSuccess }) {
       // Clear Form state
       setFormData({
         entry_date: new Date().toISOString().split("T")[0],
-        received_by: "",
+        received_by: user ? `${user.first_name} ${user.last_name}` : "",
         blood_type: "",
         government_price: "",
         received_unit: "",
@@ -208,12 +219,9 @@ function ReceiveForm({ onSubmitSuccess }) {
               type="text"
               name="received_by"
               value={formData.received_by}
-              onChange={handleChange}
-              placeholder="Enter Receiver Name (e.g. Dr. Kabir)"
+              readOnly
               required
-              className="w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700   
-  focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 font-   
-  medium text-sm"
+              className="w-full pl-11 pr-4 py-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed focus:outline-none transition duration-200 font-semibold text-sm"
             />
           </div>
         </div>

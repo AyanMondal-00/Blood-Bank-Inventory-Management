@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { 
   MdRemoveCircle, 
   MdBloodtype, 
@@ -12,8 +12,10 @@ import {
   MdDone
 } from "react-icons/md";
 import { inventoryApi } from "../services/api";
+import { useAuth } from "../hooks/useAuth";
 
 function IssueForm({ batches = [], onSubmitSuccess }) {
+  const { user } = useAuth();
   const [selectedBloodType, setSelectedBloodType] = useState("");
   const [selectedBatch, setSelectedBatch] = useState(null);
   const [selectedMonthFilter, setSelectedMonthFilter] = useState("ALL");
@@ -28,6 +30,15 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        issued_by: `${user.first_name} ${user.last_name}`,
+      }));
+    }
+  }, [user]);
 
   // Filter batches of selected blood type
   const filteredBatches = batches.filter(
@@ -182,7 +193,7 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
       setFormData({
         inventory_id: "",
         issued_unit: "",
-        issued_by: "",
+        issued_by: user ? `${user.first_name} ${user.last_name}` : "",
         remarks: "",
       });
 
@@ -458,10 +469,9 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
                 type="text"
                 name="issued_by"
                 value={formData.issued_by}
-                onChange={handleChange}
-                placeholder="e.g. Hospital Clinic, Dr. Kabir"
+                readOnly
                 required
-                className="w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 font-semibold text-sm"
+                className="w-full pl-11 pr-4 py-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed focus:outline-none transition duration-200 font-semibold text-sm"
               />
             </div>
           </div>

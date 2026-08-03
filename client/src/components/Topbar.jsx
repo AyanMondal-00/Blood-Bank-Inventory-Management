@@ -107,12 +107,12 @@ function Topbar({ isCollapsed, onToggle }) {
               {user?.role === "admin" ? "System Administrator" : "Staff User"}
             </p>
           </div>
-          <div className="h-10 w-10 bg-slate-100 border border-slate-200 text-slate-600 rounded-full flex items-center justify-center font-bold shadow-inner">
-            {user?.role === "admin" ? (
-              <MdAdminPanelSettings className="text-xl text-rose-500" />
-            ) : (
-              <MdPerson className="text-xl text-indigo-500" />
-            )}
+          <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm tracking-wide shadow-sm border text-white transition-all duration-200 hover:scale-105 cursor-pointer select-none ${
+            user?.role === "admin" 
+              ? "bg-gradient-to-br from-rose-600 to-rose-500 border-rose-400 shadow-rose-900/10" 
+              : "bg-gradient-to-br from-indigo-600 to-indigo-500 border-indigo-400 shadow-indigo-900/10"
+          }`}>
+            {user?.first_name ? user.first_name.charAt(0).toUpperCase() : "G"}
           </div>
         </div>
       </div>

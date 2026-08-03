@@ -8,11 +8,13 @@ import {
 } from "../models/dashboardModel.js";
 
 export const getDashboardService = async () => {
-  const stats = await getDashboardStatsModel();
-  const today = await getTodayTransactionStatsModel();
-  const lowStock = await getLowStockCountModel();
-  const expiringSoon = await getExpiringSoonCountModel();
-  const groupStats = await getBloodGroupStatsModel();
+  const [stats, today, lowStock, expiringSoon, groupStats] = await Promise.all([
+    getDashboardStatsModel(),
+    getTodayTransactionStatsModel(),
+    getLowStockCountModel(),
+    getExpiringSoonCountModel(),
+    getBloodGroupStatsModel(),
+  ]);
 
   return {
     ...stats,
@@ -20,5 +22,5 @@ export const getDashboardService = async () => {
     ...lowStock,
     ...expiringSoon,
     groupStats,
-  }
+  };
 };

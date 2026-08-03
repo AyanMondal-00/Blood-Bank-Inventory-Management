@@ -13,6 +13,20 @@ try {
   console.error("❌ Database Connection Failed:", error.message);
 }
 
-app.listen(PORT, () => {
+process.on("uncaughtException", (err) => {
+  console.error("💥 UNCAUGHT EXCEPTION! Shutting down...");
+  console.error(err.name, err.message, err.stack);
+  process.exit(1);
+});
+
+const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+});
+
+process.on("unhandledRejection", (err) => {
+  console.error("💥 UNHANDLED REJECTION! Shutting down gracefully...");
+  console.error(err);
+  server.close(() => {
+    process.exit(1);
+  });
 });

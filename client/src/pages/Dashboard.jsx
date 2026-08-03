@@ -13,23 +13,37 @@ function Dashboard() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const fetchStats = async () => {
+  const fetchStats = async (isSilent = false) => {
     try {
-      setLoading(true);
+      if (!isSilent) {
+        setLoading(true);
+      } else {
+        setIsRefreshing(true);
+      }
       setError(null);
       const res = await dashboardApi.getStats();
       setStats(res.data);
     } catch (err) {
       console.error(err);
-      setError("Failed to load blood group metrics. Make sure your server is online.");
+      if (!isSilent) {
+        setError("Failed to load blood group metrics. Make sure your server is online.");
+      }
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
   };
 
   useEffect(() => {
     fetchStats();
+
+    const interval = setInterval(() => {
+      fetchStats(true); // Silent background refresh
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) {
