@@ -1,0 +1,85 @@
+========================================================================
+BLOOD BANK INVENTORY MANAGEMENT SYSTEM - SYSTEM ARCHITECTURE
+========================================================================
+
+This system is built using a modern decoupled architecture:
+1. REST API Backend: Node.js + Express + MySQL
+2. Single Page Application (SPA) Frontend: Vite + React + Tailwind CSS
+
+Below is a detailed breakdown of the components, safety mechanisms, and structural patterns.
+
+------------------------------------------------------------------------
+I. BACKEND SERVICE ARCHITECTURE
+------------------------------------------------------------------------
+The backend follows a layered MVC-Service architecture pattern designed to enforce 
+Single Responsibility Principle (SRP) and separation of concerns.
+
+Layer Flow:
+  [Client HTTP Request]
+          │
+          ▼
+     [Routes]             - Express Router, exposes endpoints
+          │
+          ▼
+   [Middlewares]          - Auth Validation, JWT Check, Error Handlers
+          │
+          ▼
+   [Controllers]          - Unwraps HTTP req, calls service layer, formats ApiResponse
+          │
+          ▼
+    [Services]            - Implements transaction business rules, triggers rollback
+          │
+          ▼
+     [Models]             - Contains raw parameterized SQL queries
+          │
+          ▼
+     [Database]           - MySQL Connection Pool
+
+Key Backend Safety & Scalability Patterns:
+  1. Connection Pooling:
+     Managed via `mysql2/promise` pool. Prevents opening/closing new socket connections 
+     for every request, drastically improving request latency under load.
+  2. Transaction & Rolback Integrity:
+     Complex operations (e.g. inventory entry addition creating a transaction log) 
+     acquire a dedicated connection from the pool, start an ACID transaction, and execute.
+     If any query fails, the connection calls rollback and releases the pool client back safely in a `finally` block.
+  3. Validation Middlewares:
+     Input bounds, email regex patterns, password constraints, and role permissions 
+     are checked by `authValidation.js` before hitting model controllers, preventing SQL database pollution.
+  4. Global Exception & Rejection Hooks:
+     - `uncaughtException` catches synchronous runtime code errors.
+     - `unhandledRejection` catches asynchronous database timeouts or network faults.
+     Prevents the main Express daemon process from crashing, closing open sockets before exit.
+  5. Security & Parameterized Queries:
+     Prevents SQL injection attacks by strictly using placeholder binding (`?`) 
+     for all variable SQL values.
+
+------------------------------------------------------------------------
+II. FRONTEND SYSTEM ARCHITECTURE
+------------------------------------------------------------------------
+The client is a fast Vite + React SPA designed for modern responsiveness.
+
+Key Modules:
+  1. Global State Management (`useAuth` Hook):
+     Wraps the application in an `<AuthProvider>` context. Manages logged-in state, 
+     verifies token authenticity on boot, and provides helper variables (`user`, `isAdmin`).
+  2. Token Interception & Session Invalidation:
+     Every client-side fetch call automatically reads the JWT token from `localStorage` 
+     and attaches it as a Bearer authorization header.
+     If the backend responds with a 401 (Unauthorized/Expired Token), the interceptor 
+     clears the token and redirects the browser window to `/login?expired=true`.
+  3. Security Route Guards:
+     - `<ProtectedRoute />` checks if user state is present. If not, redirects to `/login`.
+     - `<AdminRoute />` checks if user has role === 'admin'. If not, redirects to `/dashboard`.
+  4. Auto-Polling Polling Dashboard:
+     The main dashboard uses a background `setInterval` execution loop (5 seconds). 
+     Fetches live metrics silently in the background, updating values without showing 
+     full-screen loading spinners, preventing flashing views.
+  5. Dynamic Forms:
+     `received_by` and `issued_by` fields in inventory forms are auto-populated from 
+     the active logged-in user profile context and locked as `readOnly` to ensure 
+     audit trail integrity.
+
+========================================================================
+EOF - SYSTEM ARCHITECTURE
+========================================================================

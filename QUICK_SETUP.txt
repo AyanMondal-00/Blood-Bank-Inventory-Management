@@ -1,0 +1,81 @@
+========================================================================
+BLOOD BANK INVENTORY MANAGEMENT SYSTEM - QUICK SETUP GUIDE
+========================================================================
+
+Prerequisites:
+  * Node.js (v18.x or above)
+  * MySQL Server (v8.x or above)
+  * Git (Optional)
+
+Follow the steps below to setup and run the application locally.
+
+------------------------------------------------------------------------
+STEP 1: DATABASE INITIALIZATION
+------------------------------------------------------------------------
+1. Open MySQL Workbench, connect to your server instance.
+2. Create a new database named `blood_bank_db`:
+   CREATE DATABASE blood_bank_db;
+3. Import the `Dump.sql` file present in the root folder of this project 
+   to restore all table structures (users, blood_inventory, blood_prices, and blood_transactions).
+   * Go to "Administration" tab in Workbench -> "Data Import/Restore".
+   * Select "Import from Self-Contained File".
+   * Choose the "Dump.sql" file path.
+   * Select "Default Target Schema" as `blood_bank_db`.
+   * Click "Start Import".
+
+------------------------------------------------------------------------
+STEP 2: ENVIRONMENT CONFIGURATION
+------------------------------------------------------------------------
+Open the `.env` file present in the root of the project workspace and configure the parameters:
+
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_mysql_root_password
+DB_NAME=blood_bank_db
+DB_PORT=3306
+PORT=5000
+JWT_SECRET=Follow.env
+JWT_EXPIRES_IN=24h
+
+Make sure DB_PASSWORD matches your local MySQL server password.
+
+------------------------------------------------------------------------
+STEP 3: RUN THE BACKEND SERVER
+------------------------------------------------------------------------
+1. Open your terminal, navigate to the `server` folder:
+   cd server
+2. Install node dependencies:
+   npm install
+3. Start the server in development mode:
+   npm run dev
+
+The terminal should output:
+  ✅ Database Connected
+  Server running on port 5000
+
+------------------------------------------------------------------------
+STEP 4: RUN THE CLIENT FRONTEND
+------------------------------------------------------------------------
+1. Open a new terminal instance, navigate to the `client` folder:
+   cd client
+2. Install client dependencies:
+   npm install
+3. Start the Vite React development server:
+   npm run dev
+
+The terminal will provide local access URL (typically http://localhost:5173).
+Open this URL in your web browser.
+
+------------------------------------------------------------------------
+STEP 5: TEST ACCOUNTS REGISTER/LOGIN
+------------------------------------------------------------------------
+1. On the web app interface, you will be redirected to the `/login` screen.
+2. Click on "Sign up here" to create a new user profile.
+3. Fill in your details. You can choose the Account Type / Role:
+   - System Administrator (has access to Price Update, Transaction Logs summary)
+   - Regular Staff User (restricted from Price Update screen, transactions overview cards are hidden)
+4. Submit register, then log in using your credentials.
+
+========================================================================
+EOF - QUICK SETUP GUIDE
+========================================================================

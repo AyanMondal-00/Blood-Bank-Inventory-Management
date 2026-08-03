@@ -1,0 +1,89 @@
+========================================================================
+BLOOD BANK INVENTORY MANAGEMENT SYSTEM - DATABASE SCHEMA DOCUMENTATION
+========================================================================
+
+Database Name: blood_bank_db
+DBMS: MySQL (v8.x+)
+Engine: InnoDB
+Character Set: utf8mb4 / utf8mb4_0900_ai_ci
+
+This database contains four tables designed to manage blood bag inventory tracking, 
+pricing, user authentication, and system transaction logs.
+
+------------------------------------------------------------------------
+1. TABLE: users
+------------------------------------------------------------------------
+Stores system operator details, password hash records, and authorization roles.
+
+Columns:
+  * id (INT): Auto-incremented Primary Key. Unique user identifier.
+  * first_name (VARCHAR(50)): User's first name. Required.
+  * last_name (VARCHAR(50)): User's last name. Required.
+  * email (VARCHAR(100)): User's email address. Required. Must be unique.
+  * password (VARCHAR(255)): Bcrypt-hashed password string. Required.
+  * role (ENUM('admin', 'user')): Authorization role. Default is 'user'.
+  * created_at (TIMESTAMP): Record insertion timestamp. Defaults to CURRENT_TIMESTAMP.
+  * updated_at (TIMESTAMP): Record updates timestamp. Updates automatically.
+
+Constraints:
+  * PRIMARY KEY (`id`)
+  * UNIQUE KEY (`email`)
+
+------------------------------------------------------------------------
+2. TABLE: blood_inventory
+------------------------------------------------------------------------
+Tracks active blood inventory details, expiry, and government pricing limits.
+
+Columns:
+  * id (INT): Auto-incremented Primary Key. Unique record identifier.
+  * entry_date (DATE): Stock entry/collection date. Required.
+  * received_by (VARCHAR(100)): Logged-in user name who received the blood. Required.
+  * blood_type (VARCHAR(5)): Blood group (A+, A-, B+, B-, AB+, AB-, O+, O-). Required.
+  * government_price (DECIMAL(10,2)): Government regulated price per unit. Required.
+  * received_unit (INT): Total units received in the batch. Must be > 0.
+  * available_unit (INT): Current available stock units. Default is 0.
+  * expiry_date (DATE): Expiry date of the blood bag. Required.
+  * remarks (TEXT): Optional observation notes.
+  * created_at (TIMESTAMP): Entry created timestamp. Defaults to CURRENT_TIMESTAMP.
+  * updated_at (TIMESTAMP): Last updated timestamp. Updates automatically.
+
+Constraints:
+  * PRIMARY KEY (`id`)
+  * CHECK CONSTRAINT `chk_received_unit` CHECK (`received_unit` > 0)
+
+------------------------------------------------------------------------
+3. TABLE: blood_prices
+------------------------------------------------------------------------
+Holds standard pricing metrics for each blood type group.
+
+Columns:
+  * blood_type (VARCHAR(5)): Blood group. Primary Key.
+  * price (DECIMAL(10,2)): Pricing amount. Required.
+  * updated_at (TIMESTAMP): Last updated timestamp. Updates automatically.
+
+Constraints:
+  * PRIMARY KEY (`blood_type`)
+
+------------------------------------------------------------------------
+4. TABLE: blood_transactions
+------------------------------------------------------------------------
+Keeps immutable audit logs of all receive (stock addition) and issue (stock dispatch) operations.
+
+Columns:
+  * id (INT): Auto-incremented Primary Key.
+  * inventory_id (INT): Foreign Key references `blood_inventory`.
+  * transaction_type (ENUM('RECEIVE', 'ISSUE')): Operation flag. Required.
+  * units (INT): Number of units processed. Required.
+  * total_price (DECIMAL(10,2)): Total monetary value of units. Default is 0.00.
+  * expiry_date (DATE): Expiry date of the affected batch. Required.
+  * issued_by (VARCHAR(100)): Logged-in operator name who executed the transaction. Required.
+  * remarks (TEXT): Observation notes/Dispatch explanation.
+  * created_at (DATETIME): Transaction timestamp. Defaults to CURRENT_TIMESTAMP.
+
+Constraints:
+  * PRIMARY KEY (`id`)
+  * FOREIGN KEY (`inventory_id`) REFERENCES `blood_inventory` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+
+========================================================================
+EOF - DATABASE SCHEMA DOCUMENTATION
+========================================================================
