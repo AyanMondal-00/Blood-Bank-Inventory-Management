@@ -1,12 +1,14 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 import { 
   MdDashboard, 
   MdAddBox, 
   MdIndeterminateCheckBox, 
   MdHistory, 
   MdBloodtype,
-  MdCurrencyRupee
+  MdCurrencyRupee,
+  MdLogout
 } from "react-icons/md";
 
 const menuItems = [
@@ -38,6 +40,15 @@ const menuItems = [
 ];
 
 function Sidebar({ isCollapsed }) {
+  const { isAdmin, logout } = useAuth();
+
+  const filteredMenuItems = menuItems.filter((item) => {
+    if (item.path === "/update-price") {
+      return isAdmin;
+    }
+    return true;
+  });
+
   return (
     <aside className={`bg-slate-900 text-slate-100 flex flex-col border-r border-slate-800 shadow-xl transition-all duration-300 sticky top-0 h-screen z-20 ${
       isCollapsed 
@@ -53,13 +64,12 @@ function Sidebar({ isCollapsed }) {
           <h1 className="text-xl font-bold tracking-wider bg-gradient-to-r from-rose-500 to-rose-300 bg-clip-text text-transparent">
             Blood Bank 
           </h1>
-          
         </div>
       </div>
 
       {/* Navigation Menu */}
       <nav className="flex-1 px-4 py-6 space-y-1.5">
-        {menuItems.map((item) => {
+        {filteredMenuItems.map((item) => {
           const Icon = item.icon;
           return (
             <NavLink
@@ -80,8 +90,16 @@ function Sidebar({ isCollapsed }) {
         })}
       </nav>
 
-      {/* Footer Info */}
-     
+      {/* Footer Info / Logout */}
+      <div className="p-4 border-t border-slate-800">
+        <button
+          onClick={logout}
+          className="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl font-medium text-slate-400 hover:bg-rose-900/20 hover:text-rose-450 hover:text-rose-400 transition-all duration-200 cursor-pointer"
+        >
+          <MdLogout className="text-xl shrink-0" />
+          <span>Logout</span>
+        </button>
+      </div>
     </aside>
   );
 }

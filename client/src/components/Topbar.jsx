@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 import { 
   MdAccessTime, 
   MdCalendarToday, 
   MdAdminPanelSettings,
+  MdPerson,
   MdMenu,
   MdMenuOpen,
   MdRefresh
@@ -11,6 +13,7 @@ import {
 
 function Topbar({ isCollapsed, onToggle }) {
   const location = useLocation();
+  const { user } = useAuth();
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
@@ -29,6 +32,8 @@ function Topbar({ isCollapsed, onToggle }) {
         return "Issue Blood (Stock Dispatch)";
       case "/transactions":
         return "Transaction Log Audit";
+      case "/update-price":
+        return "Price Update Control";
       default:
         return "Blood Bank System";
     }
@@ -95,11 +100,19 @@ function Topbar({ isCollapsed, onToggle }) {
         {/* User Profile */}
         <div className="flex items-center gap-3">
           <div className="text-right">
-            <p className="text-sm font-semibold text-slate-800">Admin User</p>
-            <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Super Administrator</p>
+            <p className="text-sm font-semibold text-slate-800">
+              {user ? `${user.first_name} ${user.last_name}` : "Guest"}
+            </p>
+            <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">
+              {user?.role === "admin" ? "System Administrator" : "Staff User"}
+            </p>
           </div>
           <div className="h-10 w-10 bg-slate-100 border border-slate-200 text-slate-600 rounded-full flex items-center justify-center font-bold shadow-inner">
-            <MdAdminPanelSettings className="text-xl text-rose-500" />
+            {user?.role === "admin" ? (
+              <MdAdminPanelSettings className="text-xl text-rose-500" />
+            ) : (
+              <MdPerson className="text-xl text-indigo-500" />
+            )}
           </div>
         </div>
       </div>

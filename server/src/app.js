@@ -5,6 +5,8 @@ import inventoryRoutes from "./routes/inventoryRoutes.js";
 import middleware from "./middlewares/errorMiddleware.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+
 const app = express();
 
 app.use(cors());
@@ -13,5 +15,7 @@ app.use("/api/health", routes);
 app.use("/api/inventory", inventoryRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/transactions", transactionRoutes);
+app.use("/api/auth", authRoutes);
 app.use(middleware);
+
 export default app;

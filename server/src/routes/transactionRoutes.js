@@ -2,11 +2,13 @@ import express from "express";
 import { getAllTransactionsModel } from "../models/transactionModel.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiResponse from "../utils/apiResponse.js";
+import { protect } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
 router.get(
   "/",
+  protect,
   asyncHandler(async (req, res) => {
     const data = await getAllTransactionsModel();
 

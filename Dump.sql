@@ -36,7 +36,7 @@ CREATE TABLE `blood_inventory` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   CONSTRAINT `chk_received_unit` CHECK ((`received_unit` > 0))
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -45,7 +45,7 @@ CREATE TABLE `blood_inventory` (
 
 LOCK TABLES `blood_inventory` WRITE;
 /*!40000 ALTER TABLE `blood_inventory` DISABLE KEYS */;
-INSERT INTO `blood_inventory` VALUES (1,'2026-08-01','Ayan Mondal','A+',550.00,5,0,'2026-11-26','','2026-08-01 09:28:57','2026-08-01 09:45:29'),(2,'2026-08-01','Spandan Koner ','B+',650.00,10,2,'2026-12-03','','2026-08-01 09:30:26','2026-08-02 17:48:37'),(3,'2026-08-01','Ayan Mondal','AB+',450.00,8,8,'2026-10-20','all enter','2026-08-01 17:31:52','2026-08-01 17:31:52'),(4,'2026-08-02','Ayan Mondal','B+',650.00,99999999,0,'2027-05-19','','2026-08-02 04:23:34','2026-08-02 04:26:42'),(5,'2026-08-02','Ayan Mondal','A+',560.00,996,996,'2027-04-21','','2026-08-02 04:25:14','2026-08-02 04:25:14'),(6,'2026-08-02','Spandan Koner ','A+',560.00,56,36,'2026-12-31','','2026-08-02 05:47:43','2026-08-02 17:34:56'),(7,'2026-08-02','Rivu ','AB+',450.00,5,5,'2026-12-16','','2026-08-02 06:00:03','2026-08-02 06:00:03');
+INSERT INTO `blood_inventory` VALUES (1,'2026-08-01','Ayan Mondal','A+',550.00,5,0,'2026-11-26','','2026-08-01 09:28:57','2026-08-01 09:45:29'),(2,'2026-08-01','Spandan Koner ','B+',650.00,10,2,'2026-12-03','','2026-08-01 09:30:26','2026-08-02 17:48:37'),(3,'2026-08-01','Ayan Mondal','AB+',450.00,8,8,'2026-10-20','all enter','2026-08-01 17:31:52','2026-08-01 17:31:52'),(4,'2026-08-02','Ayan Mondal','B+',650.00,99999999,0,'2027-05-19','','2026-08-02 04:23:34','2026-08-02 04:26:42'),(5,'2026-08-02','Ayan Mondal','A+',560.00,996,996,'2027-04-21','','2026-08-02 04:25:14','2026-08-02 04:25:14'),(6,'2026-08-02','Spandan Koner ','A+',560.00,56,36,'2026-12-31','','2026-08-02 05:47:43','2026-08-02 17:34:56'),(7,'2026-08-02','Rivu ','AB+',450.00,5,5,'2026-12-16','','2026-08-02 06:00:03','2026-08-02 06:00:03'),(8,'2026-08-02','Ayan Mondal','A-',650.00,25,25,'2026-08-22','','2026-08-02 18:30:15','2026-08-02 18:30:15'),(9,'2026-08-02','Spandan Koner ','O-',550.00,5,5,'2026-09-17','','2026-08-02 18:59:43','2026-08-02 18:59:43'),(10,'2026-08-02','Ayan Mondal','O-',550.00,9,9,'2026-11-26','','2026-08-02 19:00:12','2026-08-02 19:00:12'),(11,'2026-08-02','Spandan Koner ','O-',550.00,9,9,'2026-09-01','','2026-08-02 19:00:28','2026-08-02 19:00:28'),(12,'2026-08-02','Ayan Mondal','O-',550.00,5,5,'2026-09-21','','2026-08-02 19:00:53','2026-08-02 19:00:53'),(13,'2026-08-02','Spandan Koner ','O-',550.00,7,7,'2026-10-06','','2026-08-02 19:01:04','2026-08-02 19:01:04'),(14,'2026-08-03','Ayan Mondal','AB-',699.00,5,1,'2026-11-19','','2026-08-03 05:01:46','2026-08-03 05:02:29');
 /*!40000 ALTER TABLE `blood_inventory` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -70,7 +70,7 @@ CREATE TABLE `blood_prices` (
 
 LOCK TABLES `blood_prices` WRITE;
 /*!40000 ALTER TABLE `blood_prices` DISABLE KEYS */;
-INSERT INTO `blood_prices` VALUES ('A-',600.00,'2026-08-02 18:12:54'),('A+',550.00,'2026-08-02 18:12:54'),('AB-',500.00,'2026-08-02 18:12:54'),('AB+',450.00,'2026-08-02 18:12:54'),('B-',600.00,'2026-08-02 18:12:54'),('B+',650.00,'2026-08-02 18:12:54'),('O-',550.00,'2026-08-02 18:12:54'),('O+',500.00,'2026-08-02 18:12:54');
+INSERT INTO `blood_prices` VALUES ('A-',650.00,'2026-08-02 18:24:13'),('A+',550.00,'2026-08-02 18:12:54'),('AB-',699.00,'2026-08-03 05:01:13'),('AB+',450.00,'2026-08-02 18:12:54'),('B-',600.00,'2026-08-02 18:12:54'),('B+',650.00,'2026-08-02 18:12:54'),('O-',550.00,'2026-08-02 18:12:54'),('O+',500.00,'2026-08-02 18:36:51');
 /*!40000 ALTER TABLE `blood_prices` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -94,7 +94,7 @@ CREATE TABLE `blood_transactions` (
   PRIMARY KEY (`id`),
   KEY `fk_inventory` (`inventory_id`),
   CONSTRAINT `fk_inventory` FOREIGN KEY (`inventory_id`) REFERENCES `blood_inventory` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -103,8 +103,38 @@ CREATE TABLE `blood_transactions` (
 
 LOCK TABLES `blood_transactions` WRITE;
 /*!40000 ALTER TABLE `blood_transactions` DISABLE KEYS */;
-INSERT INTO `blood_transactions` VALUES (1,1,'RECEIVE',5,2750.00,'2026-11-26','Ayan Mondal','','2026-08-01 14:58:58'),(2,2,'RECEIVE',10,6500.00,'2026-12-03','Spandan Koner ','','2026-08-01 15:00:26'),(3,2,'ISSUE',5,3250.00,'2026-12-03','Kamlesh Maity','','2026-08-01 15:08:27'),(4,1,'ISSUE',5,2750.00,'2026-11-26','Kamlesh Maity','','2026-08-01 15:15:29'),(5,3,'RECEIVE',8,3600.00,'2026-10-20','Ayan Mondal','all enter','2026-08-01 23:01:52'),(6,2,'ISSUE',1,650.00,'2026-12-03','Ayan Mondal','','2026-08-02 09:48:23'),(7,5,'RECEIVE',996,557760.00,'2027-04-21','Ayan Mondal','','2026-08-02 09:55:14'),(8,6,'RECEIVE',56,31360.00,'2026-12-31','Spandan Koner ','','2026-08-02 11:17:43'),(9,7,'RECEIVE',5,2250.00,'2026-12-16','Rivu ','','2026-08-02 11:30:03'),(10,6,'ISSUE',20,11200.00,'2026-12-31','Ayan Mondal','','2026-08-02 23:04:56'),(11,2,'ISSUE',2,1300.00,'2026-12-03','Rupam','','2026-08-02 23:18:37');
+INSERT INTO `blood_transactions` VALUES (1,1,'RECEIVE',5,2750.00,'2026-11-26','Ayan Mondal','','2026-08-01 14:58:58'),(2,2,'RECEIVE',10,6500.00,'2026-12-03','Spandan Koner ','','2026-08-01 15:00:26'),(3,2,'ISSUE',5,3250.00,'2026-12-03','Kamlesh Maity','','2026-08-01 15:08:27'),(4,1,'ISSUE',5,2750.00,'2026-11-26','Kamlesh Maity','','2026-08-01 15:15:29'),(5,3,'RECEIVE',8,3600.00,'2026-10-20','Ayan Mondal','all enter','2026-08-01 23:01:52'),(6,2,'ISSUE',1,650.00,'2026-12-03','Ayan Mondal','','2026-08-02 09:48:23'),(7,5,'RECEIVE',996,557760.00,'2027-04-21','Ayan Mondal','','2026-08-02 09:55:14'),(8,6,'RECEIVE',56,31360.00,'2026-12-31','Spandan Koner ','','2026-08-02 11:17:43'),(9,7,'RECEIVE',5,2250.00,'2026-12-16','Rivu ','','2026-08-02 11:30:03'),(10,6,'ISSUE',20,11200.00,'2026-12-31','Ayan Mondal','','2026-08-02 23:04:56'),(11,2,'ISSUE',2,1300.00,'2026-12-03','Rupam','','2026-08-02 23:18:37'),(12,8,'RECEIVE',25,16250.00,'2026-08-22','Ayan Mondal','','2026-08-03 00:00:15'),(13,9,'RECEIVE',5,2750.00,'2026-09-17','Spandan Koner ','','2026-08-03 00:29:43'),(14,10,'RECEIVE',9,4950.00,'2026-11-26','Ayan Mondal','','2026-08-03 00:30:12'),(15,11,'RECEIVE',9,4950.00,'2026-09-01','Spandan Koner ','','2026-08-03 00:30:28'),(16,12,'RECEIVE',5,2750.00,'2026-09-21','Ayan Mondal','','2026-08-03 00:30:53'),(17,13,'RECEIVE',7,3850.00,'2026-10-06','Spandan Koner ','','2026-08-03 00:31:04'),(18,14,'RECEIVE',5,3495.00,'2026-11-19','Ayan Mondal','','2026-08-03 10:31:46'),(19,14,'ISSUE',4,2796.00,'2026-11-19','Ayan Mondal','','2026-08-03 10:32:29');
 /*!40000 ALTER TABLE `blood_transactions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `users`
+--
+
+DROP TABLE IF EXISTS `users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `users` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `first_name` varchar(50) NOT NULL,
+  `last_name` varchar(50) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `role` enum('admin','user') NOT NULL DEFAULT 'user',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `users`
+--
+
+LOCK TABLES `users` WRITE;
+/*!40000 ALTER TABLE `users` DISABLE KEYS */;
+/*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -116,4 +146,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-02 23:44:11
+-- Dump completed on 2026-08-03 11:38:04

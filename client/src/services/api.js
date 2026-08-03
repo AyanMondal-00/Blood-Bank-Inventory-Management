@@ -1,21 +1,50 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
 
 async function apiRequest(path, options = {}) {
+  const token = localStorage.getItem('token');
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(options.headers ?? {}),
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers ?? {}),
-    },
     ...options,
+    headers,
   })
 
   if (!response.ok) {
-    const error = new Error(`Request failed with status ${response.status}`)
-    error.status = response.status
-    throw error
+    if (response.status === 401) {
+      localStorage.removeItem("token");
+      if (
+        !window.location.pathname.startsWith("/login") &&
+        !window.location.pathname.startsWith("/register")
+      ) {
+        window.location.href = "/login?expired=true";
+      }
+    }
+    
+    const error = new Error(`Request failed with status ${response.status}`);
+    error.status = response.status;
+    try {
+      const errorData = await response.json();
+      error.message = errorData.message || error.message;
+    } catch (_) {
+      // ignore json parse error
+    }
+    throw error;
   }
 
   return response.status === 204 ? null : response.json()
+}
+
+export const authApi = {
+  login: (payload) => apiRequest('/auth/login', { method: 'POST', body: JSON.stringify(payload) }),
+  register: (payload) => apiRequest('/auth/register', { method: 'POST', body: JSON.stringify(payload) }),
+  profile: () => apiRequest('/auth/profile'),
 }
 
 export const inventoryApi = {
@@ -35,3 +64,4 @@ export const dashboardApi = {
 }
 
 export default apiRequest
+
