@@ -9,14 +9,36 @@ import {
   MdWarning,
   MdCalendarToday,
   MdAutoAwesome,
-  MdDone
+  MdDone,
+  MdInfoOutline
 } from "react-icons/md";
 import { inventoryApi } from "../services/api";
 import { useAuth } from "../hooks/useAuth";
 
+const COMPONENTS = [
+  "WHOLE BLOOD",
+  "PACKED CELLS (SAGM)",
+  "CONC. RBC'S",
+  "FFP",
+  "PLATELET CONC.",
+  "CRYO PPT (AHF)",
+  "CPP"
+];
+
+const COMPONENT_COLUMN_MAP = {
+  "WHOLE BLOOD": "whole_blood",
+  "PACKED CELLS (SAGM)": "packed_cells_sagm",
+  "CONC. RBC'S": "conc_rbcs",
+  "FFP": "ffp",
+  "PLATELET CONC.": "platelet_conc",
+  "CRYO PPT (AHF)": "cryo_ppt_ahf",
+  "CPP": "cpp"
+};
+
 function IssueForm({ batches = [], onSubmitSuccess }) {
   const { user } = useAuth();
   const [selectedBloodType, setSelectedBloodType] = useState("");
+  const [selectedComponent, setSelectedComponent] = useState("");
   const [selectedBatch, setSelectedBatch] = useState(null);
   const [selectedMonthFilter, setSelectedMonthFilter] = useState("ALL");
   
@@ -40,10 +62,14 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
     }
   }, [user]);
 
-  // Filter batches of selected blood type
-  const filteredBatches = batches.filter(
-    (b) => b.blood_type === selectedBloodType
-  );
+  // Filter batches of selected blood type that have positive stock of the selected component
+  const filteredBatches = useMemo(() => {
+    if (!selectedBloodType || !selectedComponent) return [];
+    const colName = COMPONENT_COLUMN_MAP[selectedComponent];
+    return batches.filter(
+      (b) => b.blood_type === selectedBloodType && Number(b[colName] || 0) > 0
+    );
+  }, [batches, selectedBloodType, selectedComponent]);
 
   // Sort batches by Expiry Date (FEFO - First Expired First Out)
   const sortedBatches = useMemo(() => {
@@ -52,7 +78,7 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
     );
   }, [filteredBatches]);
 
-  // Dynamically extract unique Month - Year combinations from active sorted batches for the filter dropdown
+  // Extract unique Month - Year combinations for filter dropdown
   const expiryMonths = useMemo(() => {
     const months = [];
     sortedBatches.forEach((b) => {
@@ -129,10 +155,13 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
 
   const handleSelectBatch = (batch) => {
     setSelectedBatch(batch);
+    const colName = COMPONENT_COLUMN_MAP[selectedComponent];
+    const availableComponentStock = batch[colName] || 0;
+    
     setFormData((prev) => ({
       ...prev,
       inventory_id: batch.id.toString(),
-      issued_unit: batch.available_unit.toString(), // Default pre-fill with full stock of chosen batch
+      issued_unit: availableComponentStock.toString(), // Pre-fill with max component units
     }));
     setError(null);
   };
@@ -159,6 +188,10 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
       setError("Please select a blood type.");
       return;
     }
+    if (!selectedComponent) {
+      setError("Please select a component type.");
+      return;
+    }
     if (!formData.inventory_id) {
       setError("Please select an active blood batch from the table.");
       return;
@@ -168,8 +201,12 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
       setError("Please enter a valid positive quantity to issue.");
       return;
     }
-    if (selectedBatch && units > selectedBatch.available_unit) {
-      setError(`Insufficient units! Only ${selectedBatch.available_unit} units available in this batch.`);
+
+    const colName = COMPONENT_COLUMN_MAP[selectedComponent];
+    const availableComponentStock = selectedBatch ? Number(selectedBatch[colName] || 0) : 0;
+
+    if (selectedBatch && units > availableComponentStock) {
+      setError(`Insufficient units! Only ${availableComponentStock} units of ${selectedComponent} available in this batch.`);
       return;
     }
 
@@ -179,6 +216,7 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
 
       const payload = {
         inventory_id: Number(formData.inventory_id),
+        component_type: selectedComponent,
         issued_unit: units,
         issued_by: formData.issued_by || "System",
         remarks: formData.remarks,
@@ -188,6 +226,7 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
       
       // Reset State
       setSelectedBloodType("");
+      setSelectedComponent("");
       setSelectedBatch(null);
       setSelectedMonthFilter("ALL");
       setFormData({
@@ -207,16 +246,6 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
       setLoading(false);
     }
   };
-
-  if (batches.length === 0) {
-    return (
-      <div className="bg-amber-50 border border-amber-250 rounded-xl p-6 text-center text-amber-800 space-y-2">
-        <MdWarning className="text-3xl mx-auto text-amber-600" />
-        <h4 className="font-bold">No Active Stock Available</h4>
-        <p className="text-sm max-w-md mx-auto">There are no blood bags with positive available stock units in the inventory. Please receive blood first before attempting to issue.</p>
-      </div>
-    );
-  }
 
   return (
     <form onSubmit={handleSubmit} className="p-8 space-y-6">
@@ -243,40 +272,71 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
       )}
 
       <div className="space-y-6">
-        {/* 1. Blood Type Select dropdown */}
-        <div className="space-y-2">
-          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Select Blood Type</label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-              <MdBloodtype className="text-xl" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* 1. Blood Type Select dropdown */}
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Select Blood Type</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <MdBloodtype className="text-xl" />
+              </div>
+              <select
+                value={selectedBloodType}
+                onChange={(e) => {
+                  setSelectedBloodType(e.target.value);
+                  setSelectedBatch(null);
+                  setSelectedMonthFilter("ALL");
+                  setFormData((prev) => ({
+                    ...prev,
+                    inventory_id: "",
+                    issued_unit: "",
+                  }));
+                }}
+                required
+                className="w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 appearance-none font-semibold text-sm"
+              >
+                <option value="">Choose Blood Group</option>
+                {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Other"].map((type) => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
             </div>
-            <select
-              value={selectedBloodType}
-              onChange={(e) => {
-                setSelectedBloodType(e.target.value);
-                setSelectedBatch(null);
-                setSelectedMonthFilter("ALL");
-                setFormData((prev) => ({
-                  ...prev,
-                  inventory_id: "",
-                  issued_unit: "", // Reset units on type change
-                }));
-              }}
-              required
-              className="w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 appearance-none font-semibold text-sm"
-            >
-              <option value="">Choose Blood Group</option>
-              {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((type) => (
-                <option key={type} value={type}>{type}</option>
-              ))}
-            </select>
+          </div>
+
+          {/* 2. Component Type Select dropdown */}
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Select Component Type</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <MdInfoOutline className="text-xl" />
+              </div>
+              <select
+                value={selectedComponent}
+                onChange={(e) => {
+                  setSelectedComponent(e.target.value);
+                  setSelectedBatch(null);
+                  setSelectedMonthFilter("ALL");
+                  setFormData((prev) => ({
+                    ...prev,
+                    inventory_id: "",
+                    issued_unit: "",
+                  }));
+                }}
+                required
+                className="w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 appearance-none font-semibold text-sm"
+              >
+                <option value="">Choose Component</option>
+                {COMPONENTS.map((comp) => (
+                  <option key={comp} value={comp}>{comp}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
-        {/* 2. Interactive Batch Table Panel (Horizontal Filter & Premium design) */}
+        {/* 3. Interactive Batch Table Panel */}
         <div className="space-y-3">
-          
-          {/* Expiry Month Filter Dropdown & Recommendation Option */}
+          {/* Expiry Month Filter & Recommendation Option */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-150">
             <div className="flex items-center gap-2.5">
               <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Expiry Month:</span>
@@ -284,7 +344,7 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
                 <select
                   value={selectedMonthFilter}
                   onChange={(e) => setSelectedMonthFilter(e.target.value)}
-                  disabled={!selectedBloodType}
+                  disabled={!selectedBloodType || !selectedComponent}
                   className="pl-3 pr-9 py-2 text-xs font-extrabold text-slate-700 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 appearance-none cursor-pointer min-w-[140px] disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   <option value="ALL">All Expiry Months</option>
@@ -302,27 +362,27 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
               </div>
             </div>
 
-            {selectedBloodType && sortedBatches.length > 0 && (
+            {selectedBloodType && selectedComponent && sortedBatches.length > 0 && (
               <button
                 type="button"
                 onClick={handleAutoSelectFIFO}
                 className="flex items-center gap-1.5 px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 font-extrabold text-[10px] rounded-xl border border-rose-100 uppercase transition duration-150 shadow-sm shadow-rose-600/5"
               >
                 <MdAutoAwesome className="text-base" />
-                
+                Select FIFO Batch
               </button>
             )}
           </div>
 
-          {!selectedBloodType ? (
+          {!selectedBloodType || !selectedComponent ? (
             <div className="border border-dashed border-slate-200 rounded-3xl p-8 text-center text-slate-400 text-xs font-semibold bg-slate-50/20">
               <MdCalendarToday className="text-3xl mx-auto mb-2 text-slate-300" />
-              Please select a blood type first to view available batches.
+              Please select both blood type and component type to view available batches.
             </div>
           ) : sortedBatches.length === 0 ? (
             <div className="border border-dashed border-rose-100 rounded-3xl p-8 text-center text-rose-700 text-xs font-bold bg-rose-50/20">
               <MdWarning className="text-3xl mx-auto mb-2 text-rose-500 animate-bounce" />
-              No active stock batches found in inventory for {selectedBloodType}.
+              No active stock batches found in inventory for {selectedBloodType} - {selectedComponent}.
             </div>
           ) : (
             <div className="border border-slate-200 rounded-3xl overflow-hidden bg-white shadow-md flex flex-col transition duration-300">
@@ -334,7 +394,7 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
                     <tr className="border-b border-slate-200 text-[10px] uppercase font-black text-slate-500 bg-slate-50/60 sticky top-0 z-10 tracking-widest">
                       <th className="py-3.5 px-6">Batch Expiry</th>
                       <th className="py-3.5 px-6 text-center">Status</th>
-                      <th className="py-3.5 px-6 text-right">Available Stock</th>
+                      <th className="py-3.5 px-6 text-right">Available {selectedComponent}</th>
                       <th className="py-3.5 px-6">Source</th>
                     </tr>
                   </thead>
@@ -354,6 +414,9 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
                           month: "short",
                           year: "numeric"
                         });
+                        const colName = COMPONENT_COLUMN_MAP[selectedComponent];
+                        const componentStock = batch[colName] || 0;
+
                         return (
                           <tr
                             key={batch.id}
@@ -378,7 +441,7 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
                             {/* Available stock */}
                             <td className="py-3.5 px-6 text-right text-slate-900 font-extrabold text-xs">
                               <span className={isSelected ? 'text-rose-600 font-black' : 'text-slate-800'}>
-                                {batch.available_unit} Bags
+                                {componentStock} Bags
                               </span>
                             </td>
                             {/* Source operator */}
@@ -392,11 +455,6 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
                   </tbody>
                 </table>
               </div>
-
-              {/* FIFO Hint Footer */}
-              {/* <div className="px-6 py-3 bg-slate-50/60 border-t border-slate-200 flex items-center justify-between text-[9px] text-slate-400 font-bold tracking-wider">
-                
-              </div> */}
             </div>
           )}
         </div>
@@ -407,11 +465,11 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 flex-1">
               <div>
                 <span className="block text-[10px] text-slate-400 uppercase tracking-widest font-extrabold">Selected Blood</span>
-                <span className="text-sm font-black text-rose-600 mt-0.5 inline-block">{selectedBatch.blood_type}</span>
+                <span className="text-sm font-black text-rose-600 mt-0.5 inline-block">{selectedBatch.blood_type} - {selectedComponent}</span>
               </div>
               <div>
-                <span className="block text-[10px] text-slate-400 uppercase tracking-widest font-extrabold">Batch Max Stock</span>
-                <span className="text-sm font-black text-slate-800 mt-0.5 inline-block">{selectedBatch.available_unit} Bags</span>
+                <span className="block text-[10px] text-slate-400 uppercase tracking-widest font-extrabold">Component Stock</span>
+                <span className="text-sm font-black text-slate-800 mt-0.5 inline-block">{selectedBatch[COMPONENT_COLUMN_MAP[selectedComponent]] || 0} Bags</span>
               </div>
               <div>
                 <span className="block text-[10px] text-slate-400 uppercase tracking-widest font-extrabold">Source</span>
@@ -448,10 +506,10 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
                 value={formData.issued_unit}
                 onChange={handleChange}
                 onWheel={(e) => e.target.blur()}
-                placeholder={selectedBatch ? `Max: ${selectedBatch.available_unit}` : "Select batch from table first"}
+                placeholder={selectedBatch ? `Max: ${selectedBatch[COMPONENT_COLUMN_MAP[selectedComponent]] || 0}` : "Select batch first"}
                 required
                 min="1"
-                max={selectedBatch ? selectedBatch.available_unit : undefined}
+                max={selectedBatch ? (selectedBatch[COMPONENT_COLUMN_MAP[selectedComponent]] || 0) : undefined}
                 disabled={!selectedBatch}
                 className="w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 font-semibold text-sm disabled:opacity-60 disabled:cursor-not-allowed appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&]:moz-appearance-textfield"
               />

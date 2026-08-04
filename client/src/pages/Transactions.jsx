@@ -9,14 +9,13 @@ import {
   MdFileDownload,
   MdTune,
   MdDateRange,
-  MdCurrencyRupee,
   MdClear
 } from "react-icons/md";
 import { transactionApi } from "../services/api";
 import TransactionTable from "../components/TransactionTable";
 import { useAuth } from "../hooks/useAuth";
 
-const BLOOD_TYPES = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+const BLOOD_TYPES = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Other"];
 
 function Transactions() {
   const navigate = useNavigate();
@@ -61,13 +60,13 @@ function Transactions() {
     fetchTransactions();
   }, []);
 
-
   const handleExportToExcel = () => {
     // Define headers
     const headers = [
       "Timestamp",
       "Type",
       "Blood Type",
+      "Component Breakdown",
       "Units",
       "Total Price",
       "Expiry Date",
@@ -102,11 +101,24 @@ function Transactions() {
       }
 
       const totalVal = t.total_price ? `${t.total_price} Rs` : "0 Rs";
+
+      const getComponentsText = (tx) => {
+        const parts = [];
+        if (tx.whole_blood > 0) parts.push(`WHOLE BLOOD (${tx.whole_blood} U)`);
+        if (tx.packed_cells_sagm > 0) parts.push(`PACKED CELLS (SAGM) (${tx.packed_cells_sagm} U)`);
+        if (tx.conc_rbcs > 0) parts.push(`CONC. RBC'S (${tx.conc_rbcs} U)`);
+        if (tx.ffp > 0) parts.push(`FFP (${tx.ffp} U)`);
+        if (tx.platelet_conc > 0) parts.push(`PLATELET CONC. (${tx.platelet_conc} U)`);
+        if (tx.cryo_ppt_ahf > 0) parts.push(`CRYO PPT (AHF) (${tx.cryo_ppt_ahf} U)`);
+        if (tx.cpp > 0) parts.push(`CPP (${tx.cpp} U)`);
+        return parts.join(", ") || "N/A";
+      };
       
       return [
         formattedDate,
         t.transaction_type,
         t.blood_type || "N/A",
+        getComponentsText(t),
         `${isReceive ? "+" : "-"}${t.units} U`,
         totalVal,
         expiry,
@@ -223,7 +235,6 @@ function Transactions() {
           >
             <MdArrowBack className="text-xl" />
           </button>
-          
         </div>
 
         <div className="flex items-center gap-2">

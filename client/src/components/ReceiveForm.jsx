@@ -3,15 +3,15 @@ import {
   MdAddCircle,
   MdBloodtype,
   MdPerson,
-  MdCurrencyRupee,
   MdDateRange,
   MdNote,
   MdErrorOutline,
+  MdInfoOutline,
 } from "react-icons/md";
 import { inventoryApi } from "../services/api";
 import { useAuth } from "../hooks/useAuth";
 
-const BLOOD_TYPES = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+const BLOOD_TYPES = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Other"];
 
 function ReceiveForm({ onSubmitSuccess }) {
   const { user } = useAuth();
@@ -19,8 +19,13 @@ function ReceiveForm({ onSubmitSuccess }) {
     entry_date: new Date().toISOString().split("T")[0],
     received_by: "",
     blood_type: "",
-    government_price: "",
-    received_unit: "",
+    whole_blood: "",
+    packed_cells_sagm: "",
+    conc_rbcs: "",
+    ffp: "",
+    platelet_conc: "",
+    cryo_ppt_ahf: "",
+    cpp: "",
     expiry_date: "",
     remarks: "",
   });
@@ -53,17 +58,11 @@ function ReceiveForm({ onSubmitSuccess }) {
     }
   }, [user]);
 
-  const handleBloodTypeChange = (e) => {
-    const selectedType = e.target.value;
-    const foundPriceObj = prices.find((p) => p.blood_type === selectedType);
-    const selectedPrice = foundPriceObj ? foundPriceObj.price : "";
-
-    setFormData((prev) => ({
-      ...prev,
-      blood_type: selectedType,
-      government_price: selectedPrice,
-    }));
-  };
+  // Extract component prices for the selected blood group
+  const activePrices = React.useMemo(() => {
+    if (!formData.blood_type) return [];
+    return prices.filter((p) => p.blood_type === formData.blood_type);
+  }, [prices, formData.blood_type]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -81,16 +80,26 @@ function ReceiveForm({ onSubmitSuccess }) {
       setError("Please select a blood type.");
       return;
     }
-    if (Number(formData.received_unit) <= 0) {
-      setError("Received units must be a positive number.");
+
+    const components = {
+      whole_blood: Number(formData.whole_blood || 0),
+      packed_cells_sagm: Number(formData.packed_cells_sagm || 0),
+      conc_rbcs: Number(formData.conc_rbcs || 0),
+      ffp: Number(formData.ffp || 0),
+      platelet_conc: Number(formData.platelet_conc || 0),
+      cryo_ppt_ahf: Number(formData.cryo_ppt_ahf || 0),
+      cpp: Number(formData.cpp || 0),
+    };
+
+    const totalUnits = Object.values(components).reduce((sum, val) => sum + val, 0);
+
+    if (totalUnits <= 0) {
+      setError("Please enter quantity for at least one component.");
       return;
     }
-    if (Number(formData.received_unit) > 3000) {
-      setError("Cannot enter more than 3000 bags at a single time.");
-      return;
-    }
-    if (Number(formData.government_price) < 0) {
-      setError("Price cannot be negative.");
+
+    if (totalUnits > 3000) {
+      setError("Total received units cannot exceed 3000 bags at a single time.");
       return;
     }
 
@@ -100,8 +109,13 @@ function ReceiveForm({ onSubmitSuccess }) {
 
       const payload = {
         ...formData,
-        received_unit: Number(formData.received_unit),
-        government_price: Number(formData.government_price),
+        whole_blood: components.whole_blood,
+        packed_cells_sagm: components.packed_cells_sagm,
+        conc_rbcs: components.conc_rbcs,
+        ffp: components.ffp,
+        platelet_conc: components.platelet_conc,
+        cryo_ppt_ahf: components.cryo_ppt_ahf,
+        cpp: components.cpp,
       };
 
       await inventoryApi.create(payload);
@@ -111,8 +125,13 @@ function ReceiveForm({ onSubmitSuccess }) {
         entry_date: new Date().toISOString().split("T")[0],
         received_by: user ? `${user.first_name} ${user.last_name}` : "",
         blood_type: "",
-        government_price: "",
-        received_unit: "",
+        whole_blood: "",
+        packed_cells_sagm: "",
+        conc_rbcs: "",
+        ffp: "",
+        platelet_conc: "",
+        cryo_ppt_ahf: "",
+        cpp: "",
         expiry_date: "",
         remarks: "",
       });
@@ -168,7 +187,7 @@ function ReceiveForm({ onSubmitSuccess }) {
             <select
               name="blood_type"
               value={formData.blood_type}
-              onChange={handleBloodTypeChange}
+              onChange={handleChange}
               required
               className="w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 appearance-none font-semibold text-sm"
             >
@@ -182,31 +201,7 @@ function ReceiveForm({ onSubmitSuccess }) {
           </div>
         </div>
 
-        {/* Received Unit Input */}
-        <div className="space-y-2">
-          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-            Quantity (Units/Bags)
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-              <MdAddCircle className="text-xl" />
-            </div>
-            <input
-              type="number"
-              name="received_unit"
-              value={formData.received_unit}
-              onChange={handleChange}
-              onWheel={(e) => e.target.blur()}
-              placeholder="e.g. 5"
-              required
-              min="1"
-              max="3000"
-              className="w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 font-medium text-sm appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&]:moz-appearance-textfield"
-            />
-          </div>
-        </div>
-
-        {/* Received By Input */}
+        {/* Received By Input (Auto-filled read-only) */}
         <div className="space-y-2">
           <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
             Received By
@@ -222,27 +217,6 @@ function ReceiveForm({ onSubmitSuccess }) {
               readOnly
               required
               className="w-full pl-11 pr-4 py-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed focus:outline-none transition duration-200 font-semibold text-sm"
-            />
-          </div>
-        </div>
-
-        {/* Government Price Input */}
-        <div className="space-y-2">
-          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-            Government Price (Rs)
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-              <MdCurrencyRupee className="text-xl" />
-            </div>
-            <input
-              type="number"
-              name="government_price"
-              value={formData.government_price}
-              readOnly
-              placeholder="Select blood group first"
-              required
-              className="w-full pl-11 pr-4 py-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed focus:outline-none transition duration-200 font-semibold text-sm appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&]:moz-appearance-textfield"
             />
           </div>
         </div>
@@ -285,6 +259,61 @@ function ReceiveForm({ onSubmitSuccess }) {
               className="w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 font-medium text-sm"
             />
           </div>
+        </div>
+      </div>
+
+      {/* Component Quantities Grid */}
+      <div className="border-t border-slate-100 pt-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+          <h4 className="text-xs font-black text-rose-600 uppercase tracking-wider">
+            Blood Component Quantities (Bags)
+          </h4>
+          {formData.blood_type && activePrices.length > 0 && (
+            <span className="text-[10px] font-semibold text-slate-400 flex items-center gap-1">
+              <MdInfoOutline className="text-sm text-slate-500" /> Rates shown below are standard processing fees.
+            </span>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 bg-slate-50/50 p-4.5 rounded-2xl border border-slate-150">
+          {[
+            { label: "Whole Blood", name: "whole_blood", dbKey: "WHOLE BLOOD" },
+            { label: "Packed Cells (SAGM)", name: "packed_cells_sagm", dbKey: "PACKED CELLS (SAGM)" },
+            { label: "Conc. RBC's", name: "conc_rbcs", dbKey: "CONC. RBC'S" },
+            { label: "FFP", name: "ffp", dbKey: "FFP" },
+            { label: "Platelet Conc.", name: "platelet_conc", dbKey: "PLATELET CONC." },
+            { label: "Cryo PPT (AHF)", name: "cryo_ppt_ahf", dbKey: "CRYO PPT (AHF)" },
+            { label: "CPP", name: "cpp", dbKey: "CPP" },
+          ].map((comp) => {
+            const compPriceObj = activePrices.find((p) => p.component_type === comp.dbKey);
+            const compPrice = compPriceObj ? compPriceObj.price : null;
+
+            return (
+              <div key={comp.name} className="space-y-1.5 bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex flex-col justify-between">
+                <div>
+                  <label className="text-[10px] font-black text-slate-700 uppercase tracking-wider block">
+                    {comp.label}
+                  </label>
+                  {formData.blood_type && (
+                    <span className="text-[9px] font-bold text-slate-400 block mt-0.5">
+                      Fee: {compPrice !== null ? `₹${compPrice}` : "Not Set"}
+                    </span>
+                  )}
+                </div>
+                <input
+                  type="number"
+                  name={comp.name}
+                  value={formData[comp.name]}
+                  onChange={handleChange}
+                  onWheel={(e) => e.target.blur()}
+                  placeholder="0"
+                  min="0"
+                  max="3000"
+                  className="w-full mt-2 px-3 py-1.5 bg-slate-50/50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 font-bold text-xs"
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
 

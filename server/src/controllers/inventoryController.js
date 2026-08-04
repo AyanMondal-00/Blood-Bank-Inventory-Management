@@ -61,13 +61,13 @@ export const getBloodPrices = asyncHandler(async (req, res) => {
 });
 
 export const updateBloodPrice = asyncHandler(async (req, res) => {
-  const { blood_type, new_price } = req.body;
-  if (!blood_type || new_price === undefined || Number(new_price) < 0) {
+  const { blood_type, component_type, new_price } = req.body;
+  if (!blood_type || !component_type || new_price === undefined || Number(new_price) < 0) {
     res.status(400);
-    throw new Error("Invalid blood type or price");
+    throw new Error("Invalid blood type, component type or price");
   }
 
-  const result = await updateBloodPriceService(blood_type, Number(new_price));
+  const result = await updateBloodPriceService(blood_type, component_type, Number(new_price));
 
   res.status(200).json(
     new ApiResponse(200, "Blood price updated successfully", result)

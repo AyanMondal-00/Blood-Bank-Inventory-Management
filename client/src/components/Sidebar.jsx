@@ -8,7 +8,8 @@ import {
   MdHistory, 
   MdBloodtype,
   MdCurrencyRupee,
-  MdLogout
+  MdLogout,
+  MdMenuOpen
 } from "react-icons/md";
 
 const menuItems = [
@@ -39,7 +40,7 @@ const menuItems = [
   },
 ];
 
-function Sidebar({ isCollapsed }) {
+function Sidebar({ isCollapsed, onToggle }) {
   const { isAdmin, logout } = useAuth();
 
   const filteredMenuItems = menuItems.filter((item) => {
@@ -55,16 +56,25 @@ function Sidebar({ isCollapsed }) {
         ? "w-0 -translate-x-full opacity-0 overflow-hidden border-none pointer-events-none" 
         : "w-64 translate-x-0 opacity-100"
     }`}>
-      {/* Brand Logo Section */}
-      <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-800">
-        <div className="p-2 bg-rose-600 rounded-lg shadow-md animate-pulse">
-          <MdBloodtype className="text-2xl text-white" />
+      {/* Brand Logo Section with Toggle Close button */}
+      <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-rose-600 rounded-lg shadow-md animate-pulse">
+            <MdBloodtype className="text-2xl text-white" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold tracking-wider bg-gradient-to-r from-rose-500 to-rose-300 bg-clip-text text-transparent">
+              Blood Bank 
+            </h1>
+          </div>
         </div>
-        <div>
-          <h1 className="text-xl font-bold tracking-wider bg-gradient-to-r from-rose-500 to-rose-300 bg-clip-text text-transparent">
-            Blood Bank 
-          </h1>
-        </div>
+        <button
+          onClick={onToggle}
+          className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition cursor-pointer"
+          title="Collapse Sidebar"
+        >
+          <MdMenuOpen className="text-xl text-rose-500" />
+        </button>
       </div>
 
       {/* Navigation Menu */}

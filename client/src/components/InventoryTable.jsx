@@ -26,13 +26,25 @@ const getExpiryStatus = (expiryDateString) => {
 };
 
 function InventoryTable({ data = [] }) {
+  const getComponentsText = (item) => {
+    const parts = [];
+    if (item.whole_blood > 0) parts.push(`WHOLE BLOOD: ${item.whole_blood}`);
+    if (item.packed_cells_sagm > 0) parts.push(`PACKED CELLS (SAGM): ${item.packed_cells_sagm}`);
+    if (item.conc_rbcs > 0) parts.push(`CONC. RBC'S: ${item.conc_rbcs}`);
+    if (item.ffp > 0) parts.push(`FFP: ${item.ffp}`);
+    if (item.platelet_conc > 0) parts.push(`PLATELET CONC.: ${item.platelet_conc}`);
+    if (item.cryo_ppt_ahf > 0) parts.push(`CRYO PPT (AHF): ${item.cryo_ppt_ahf}`);
+    if (item.cpp > 0) parts.push(`CPP: ${item.cpp}`);
+    return parts.join(", ") || "N/A";
+  };
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left border-collapse">
         <thead>
           <tr className="bg-slate-50/70 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-wider">
             <th className="py-4 px-6">Blood Type</th>
-            <th className="py-4 px-6">Stock Status (Available/Total)</th>
+            <th className="py-4 px-6">Stock Status (Available/Total) & Component Breakdown</th>
             <th className="py-4 px-6">Received By</th>
             <th className="py-4 px-6">Entry Date</th>
             <th className="py-4 px-6">Expiry Status</th>
@@ -58,7 +70,7 @@ function InventoryTable({ data = [] }) {
 
                   {/* Stock units Progress Bar */}
                   <td className="py-4 px-6">
-                    <div className="space-y-1.5 w-full max-w-[180px]">
+                    <div className="space-y-1.5 w-full max-w-[200px]">
                       <div className="flex items-center justify-between text-xs font-bold text-slate-500">
                         <span>{item.available_unit} / {item.received_unit} Bags</span>
                         <span>{Math.round(percent)}%</span>
@@ -71,6 +83,9 @@ function InventoryTable({ data = [] }) {
                           style={{ width: `${percent}%` }}
                         ></div>
                       </div>
+                      <span className="text-[10px] text-slate-400 font-extrabold block truncate max-w-[200px]" title={getComponentsText(item)}>
+                        {getComponentsText(item)}
+                      </span>
                     </div>
                   </td>
 
@@ -81,7 +96,7 @@ function InventoryTable({ data = [] }) {
 
                   {/* Entry date */}
                   <td className="py-4 px-6 text-slate-400 font-mono text-xs">
-                    {new Date(item.entry_date).toLocaleDateString("en-US", {
+                    {new Date(item.entry_date).toLocaleDateString("en-IN", {
                       month: "short",
                       day: "numeric",
                       year: "numeric"
@@ -98,7 +113,7 @@ function InventoryTable({ data = [] }) {
 
                   {/* Price */}
                   <td className="py-4 px-6 text-right font-bold text-slate-800">
-                    {item.government_price.toLocaleString("en-US")} Rs
+                    ₹{item.government_price.toLocaleString("en-IN")}
                   </td>
 
                   {/* Remarks */}

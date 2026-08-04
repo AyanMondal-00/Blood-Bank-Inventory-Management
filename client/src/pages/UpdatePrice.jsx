@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   MdArrowBack, 
@@ -9,11 +9,22 @@ import {
   MdSettings,
   MdEdit,
   MdRefresh,
-  MdInfo
+  MdInfo,
+  MdFilterList,
+  MdClear
 } from "react-icons/md";
 import { inventoryApi } from "../services/api";
 
-const BLOOD_TYPES = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+const BLOOD_TYPES = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Other"];
+const COMPONENTS = [
+  "WHOLE BLOOD",
+  "PACKED CELLS (SAGM)",
+  "CONC. RBC'S",
+  "FFP",
+  "PLATELET CONC.",
+  "CRYO PPT (AHF)",
+  "CPP"
+];
 
 function UpdatePrice() {
   const navigate = useNavigate();
@@ -21,6 +32,7 @@ function UpdatePrice() {
   
   // Form State
   const [bloodType, setBloodType] = useState("");
+  const [componentType, setComponentType] = useState("");
   const [newPrice, setNewPrice] = useState("");
   const [isEditMode, setIsEditMode] = useState(false);
   
@@ -28,6 +40,10 @@ function UpdatePrice() {
   const [prices, setPrices] = useState([]);
   const [tableLoading, setTableLoading] = useState(true);
   
+  // Filter State
+  const [filterBloodType, setFilterBloodType] = useState("");
+  const [filterComponent, setFilterComponent] = useState("");
+
   // Feedback State
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
@@ -61,6 +77,10 @@ function UpdatePrice() {
       setError("Please select a blood group.");
       return;
     }
+    if (!componentType) {
+      setError("Please select a component type.");
+      return;
+    }
     if (newPrice === "" || Number(newPrice) < 0) {
       setError("Please enter a valid positive government price.");
       return;
@@ -72,6 +92,7 @@ function UpdatePrice() {
       
       const payload = {
         blood_type: bloodType,
+        component_type: componentType,
         new_price: Number(newPrice),
       };
 
@@ -81,6 +102,7 @@ function UpdatePrice() {
       
       // Reset form and reload
       setBloodType("");
+      setComponentType("");
       setNewPrice("");
       setIsEditMode(false);
       await loadPrices();
@@ -95,6 +117,7 @@ function UpdatePrice() {
   // Triggered when clicking Edit icon on table row
   const handleEditClick = (item) => {
     setBloodType(item.blood_type);
+    setComponentType(item.component_type);
     setNewPrice(item.price);
     setIsEditMode(true);
     setError(null);
@@ -109,9 +132,25 @@ function UpdatePrice() {
 
   const handleCancelEdit = () => {
     setBloodType("");
+    setComponentType("");
     setNewPrice("");
     setIsEditMode(false);
     setError(null);
+  };
+
+  // Memoized filtered prices for maximum performance
+  const filteredPrices = useMemo(() => {
+    return prices.filter((item) => {
+      const matchesBloodType = filterBloodType === "" || item.blood_type === filterBloodType;
+      const matchesComponent = filterComponent === "" || item.component_type === filterComponent;
+      return matchesBloodType && matchesComponent;
+    });
+  }, [prices, filterBloodType, filterComponent]);
+
+  const hasActiveFilters = filterBloodType !== "" || filterComponent !== "";
+  const handleClearFilters = () => {
+    setFilterBloodType("");
+    setFilterComponent("");
   };
 
   return (
@@ -136,13 +175,12 @@ function UpdatePrice() {
           </button>
           <div>
             <h1 className="text-2xl font-black text-slate-800 tracking-tight">Government Price Settings</h1>
-           
           </div>
         </div>
         <button
           onClick={loadPrices}
           disabled={tableLoading}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl shadow-sm transition text-xs font-bold disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl shadow-sm transition text-xs font-bold disabled:opacity-50"
         >
           <MdRefresh className={`text-base ${tableLoading ? 'animate-spin' : ''}`} />
           Refresh
@@ -157,7 +195,7 @@ function UpdatePrice() {
           <div className="bg-white border border-slate-100 rounded-3xl shadow-md overflow-hidden transition-all duration-300">
             <div className={`px-6 py-5 bg-gradient-to-r text-white flex items-center gap-3 ${isEditMode ? 'from-amber-600 to-amber-500' : 'from-rose-600 to-rose-500'}`}>
               <div className="p-2 bg-white/10 rounded-xl">
-                <MdSettings className="text-xl animate-spin-slow" />
+                <MdSettings className="text-xl" />
               </div>
               <div>
                 <h3 className="text-sm font-black uppercase tracking-wider">
@@ -190,7 +228,7 @@ function UpdatePrice() {
                     value={bloodType}
                     onChange={(e) => setBloodType(e.target.value)}
                     required
-                    disabled={isEditMode} // Lock blood group dropdown in edit mode
+                    disabled={isEditMode}
                     className={`w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 appearance-none font-semibold text-xs ${isEditMode ? 'bg-slate-100 cursor-not-allowed text-slate-400' : ''}`}
                   >
                     <option value="">Select Blood Group</option>
@@ -201,9 +239,35 @@ function UpdatePrice() {
                     ))}
                   </select>
                 </div>
+              </div>
+
+              {/* Component Type Dropdown */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                  Choose Component Type
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <MdInfo className="text-lg" />
+                  </div>
+                  <select
+                    value={componentType}
+                    onChange={(e) => setComponentType(e.target.value)}
+                    required
+                    disabled={isEditMode}
+                    className={`w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 appearance-none font-semibold text-xs ${isEditMode ? 'bg-slate-100 cursor-not-allowed text-slate-400' : ''}`}
+                  >
+                    <option value="">Select Component</option>
+                    {COMPONENTS.map((comp) => (
+                      <option key={comp} value={comp}>
+                        {comp}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 {isEditMode && (
                   <p className="text-[10px] text-slate-400 font-semibold italic flex items-center gap-1">
-                    <MdInfo className="text-xs text-amber-500" /> Blood type cannot be altered in edit mode.
+                    <MdInfo className="text-xs text-amber-500" /> Blood type & component cannot be altered in edit mode.
                   </p>
                 )}
               </div>
@@ -226,7 +290,7 @@ function UpdatePrice() {
                     onWheel={(e) => e.target.blur()}
                     required
                     min="0"
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 font-semibold text-xs appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&]:moz-appearance-textfield"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 font-semibold text-xs appearance-none"
                   />
                 </div>
               </div>
@@ -273,8 +337,66 @@ function UpdatePrice() {
                 <p className="text-[10px] text-slate-400 font-semibold">Live government rates saved in database</p>
               </div>
               <span className="bg-rose-50 text-rose-600 text-[10px] font-extrabold px-2.5 py-1 rounded-full border border-rose-100 uppercase">
-                {prices.length} Records
+                {filteredPrices.length} / {prices.length} Records
               </span>
+            </div>
+
+            {/* Smart Filter Panel */}
+            <div className="px-6 py-3.5 bg-slate-50/60 border-b border-slate-100 flex flex-col sm:flex-row items-center gap-4 justify-between">
+              <div className="flex items-center gap-2 text-slate-500 font-bold text-[11px] uppercase tracking-wider shrink-0">
+                <MdFilterList className="text-lg text-slate-450" />
+                <span>Filters:</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3 w-full sm:max-w-md">
+                {/* Filter Blood Group */}
+                <div className="relative">
+                  <select
+                    value={filterBloodType}
+                    onChange={(e) => setFilterBloodType(e.target.value)}
+                    className="w-full pl-3 pr-8 py-1.5 bg-white border border-slate-200 rounded-xl text-[11px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-150 appearance-none cursor-pointer"
+                  >
+                    <option value="">All Blood Groups</option>
+                    {BLOOD_TYPES.map((type) => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-slate-400">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Filter Component */}
+                <div className="relative">
+                  <select
+                    value={filterComponent}
+                    onChange={(e) => setFilterComponent(e.target.value)}
+                    className="w-full pl-3 pr-8 py-1.5 bg-white border border-slate-200 rounded-xl text-[11px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-150 appearance-none cursor-pointer"
+                  >
+                    <option value="">All Components</option>
+                    {COMPONENTS.map((comp) => (
+                      <option key={comp} value={comp}>{comp}</option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-slate-400">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={handleClearFilters}
+                  className="text-rose-600 hover:text-rose-700 text-[10px] font-black uppercase flex items-center gap-1 shrink-0 transition"
+                >
+                  <MdClear className="text-sm" />
+                  Clear
+                </button>
+              )}
             </div>
 
             {tableLoading && prices.length === 0 ? (
@@ -282,28 +404,29 @@ function UpdatePrice() {
                 <div className="w-8 h-8 border-4 border-slate-100 border-t-rose-500 rounded-full animate-spin"></div>
                 <p className="text-xs text-slate-400 font-semibold">Loading blood prices...</p>
               </div>
-            ) : prices.length === 0 ? (
+            ) : filteredPrices.length === 0 ? (
               <div className="flex-1 flex flex-col items-center justify-center py-16 text-slate-400 space-y-2">
                 <MdBloodtype className="text-5xl text-slate-200" />
-                <p className="text-sm font-bold">No price records found.</p>
-                <p className="text-xs font-medium">Use the form to set prices for the first time.</p>
+                <p className="text-sm font-bold">No matching price records found.</p>
+                <p className="text-xs font-medium">Reset the filters or update the rates using the form.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto flex-1 max-h-[480px] overflow-y-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-150 text-[10px] uppercase font-bold text-slate-400 bg-slate-50/30">
-                      <th className="py-3 px-6">Blood Type</th>
-                      <th className="py-3 px-6 text-right">Government Price</th>
-                      <th className="py-3 px-6 text-center">Last Updated</th>
-                      <th className="py-3 px-6 text-center">Action</th>
+                    <tr className="border-b border-slate-150 text-[10px] uppercase font-bold text-slate-400 bg-slate-50/30 sticky top-0 z-10">
+                      <th className="py-3 px-6 bg-slate-50">Blood Type</th>
+                      <th className="py-3 px-6 bg-slate-50">Component Type</th>
+                      <th className="py-3 px-6 text-right bg-slate-50">Processing Fee</th>
+                      <th className="py-3 px-6 text-center bg-slate-50">Last Updated</th>
+                      <th className="py-3 px-6 text-center bg-slate-50">Action</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {prices.map((item) => (
+                    {filteredPrices.map((item) => (
                       <tr 
-                        key={item.blood_type}
-                        className={`border-b border-slate-100 hover:bg-slate-50/60 transition duration-150 ${bloodType === item.blood_type ? 'bg-amber-50/30 hover:bg-amber-50/50' : ''}`}
+                        key={`${item.blood_type}-${item.component_type}`}
+                        className={`border-b border-slate-100 hover:bg-slate-50/60 transition duration-150 ${bloodType === item.blood_type && componentType === item.component_type ? 'bg-amber-50/30 hover:bg-amber-50/50' : ''}`}
                       >
                         {/* Blood type */}
                         <td className="py-3.5 px-6">
@@ -312,9 +435,13 @@ function UpdatePrice() {
                             {item.blood_type}
                           </span>
                         </td>
+                        {/* Component type */}
+                        <td className="py-3.5 px-6 font-semibold text-slate-600 text-xs">
+                          {item.component_type}
+                        </td>
                         {/* Price */}
                         <td className="py-3.5 px-6 text-right font-bold text-slate-900 text-sm">
-                          {Number(item.price).toLocaleString("en-US")} Rs
+                          ₹{Number(item.price).toLocaleString("en-IN")}
                         </td>
                         {/* Updated At */}
                         <td className="py-3.5 px-6 text-center text-[10px] text-slate-400 font-semibold">
@@ -331,7 +458,7 @@ function UpdatePrice() {
                           <button
                             onClick={() => handleEditClick(item)}
                             className="p-2 text-rose-600 hover:bg-rose-50 rounded-xl transition duration-150 inline-flex items-center justify-center border border-transparent hover:border-rose-100"
-                            title={`Edit price for ${item.blood_type}`}
+                            title={`Edit price for ${item.blood_type} - ${item.component_type}`}
                           >
                             <MdEdit className="text-base" />
                           </button>

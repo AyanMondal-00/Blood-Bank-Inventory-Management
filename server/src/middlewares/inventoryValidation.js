@@ -5,8 +5,13 @@ export const validateCreateInventory = (req, res, next) => {
     entry_date,
     received_by,
     blood_type,
-    government_price,
-    received_unit,
+    whole_blood,
+    packed_cells_sagm,
+    conc_rbcs,
+    ffp,
+    platelet_conc,
+    cryo_ppt_ahf,
+    cpp,
     expiry_date,
   } = req.body;
 
@@ -20,30 +25,44 @@ export const validateCreateInventory = (req, res, next) => {
   if (!blood_type) {
     throw new ApiError(400, "Blood type is required");
   }
-  if (government_price === undefined || government_price === null) {
-    throw new ApiError(400, "Government price is required");
-  }
-  if (received_unit === undefined || received_unit === null) {
-    throw new ApiError(400, "Received unit is required");
-  }
   if (!expiry_date) {
     throw new ApiError(400, "Expiry date is required");
   }
 
-  // 2. Type & range validations
-  const validBloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+  // 2. Type & range validations for blood groups
+  const validBloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Other"];
   if (!validBloodGroups.includes(blood_type)) {
     throw new ApiError(400, "Invalid blood type");
   }
 
-  const numReceivedUnit = Number(received_unit);
-  if (!Number.isInteger(numReceivedUnit) || numReceivedUnit <= 0) {
-    throw new ApiError(400, "Received unit must be a positive integer");
+  // Validate component quantities
+  const components = {
+    whole_blood,
+    packed_cells_sagm,
+    conc_rbcs,
+    ffp,
+    platelet_conc,
+    cryo_ppt_ahf,
+    cpp,
+  };
+
+  let totalUnits = 0;
+  for (const [key, value] of Object.entries(components)) {
+    if (value !== undefined && value !== null && value !== "") {
+      const numVal = Number(value);
+      if (!Number.isInteger(numVal) || numVal < 0) {
+        throw new ApiError(400, `${key} quantity must be a non-negative integer`);
+      }
+      totalUnits += numVal;
+    }
   }
 
-  const numGovPrice = Number(government_price);
-  if (isNaN(numGovPrice) || numGovPrice < 0) {
-    throw new ApiError(400, "Government price must be a valid positive number");
+  if (totalUnits <= 0) {
+    throw new ApiError(400, "At least one component must have a positive quantity.");
+  }
+
+  if (totalUnits > 3000) {
+    throw new ApiError(400, "Total units cannot exceed 3000 bags at a single time.");
   }
 
   // 3. Date validations
