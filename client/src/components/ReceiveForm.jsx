@@ -13,6 +13,33 @@ import { useAuth } from "../hooks/useAuth";
 
 const BLOOD_TYPES = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Other"];
 
+const COMPONENT_SHELF_LIVES = {
+  whole_blood: 35,
+  packed_cells_sagm: 42,
+  conc_rbcs: 35,
+  ffp: 365,
+  platelet_conc: 5,
+  cryo_ppt_ahf: 365,
+  cpp: 365,
+};
+
+const calculateExpiryDate = (entryDateStr, name) => {
+  if (!entryDateStr) return "Select collection date";
+  const entryDate = new Date(entryDateStr);
+  if (isNaN(entryDate.getTime())) return "Invalid collection date";
+  const days = COMPONENT_SHELF_LIVES[name];
+  if (!days) return "";
+  
+  const expiryDate = new Date(entryDate.getTime());
+  expiryDate.setDate(expiryDate.getDate() + days);
+  
+  return expiryDate.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric"
+  });
+};
+
 function ReceiveForm({ onSubmitSuccess }) {
   const { user } = useAuth();
   const [formData, setFormData] = useState({
@@ -26,7 +53,6 @@ function ReceiveForm({ onSubmitSuccess }) {
     platelet_conc: "",
     cryo_ppt_ahf: "",
     cpp: "",
-    expiry_date: "",
     remarks: "",
   });
 
@@ -132,7 +158,6 @@ function ReceiveForm({ onSubmitSuccess }) {
         platelet_conc: "",
         cryo_ppt_ahf: "",
         cpp: "",
-        expiry_date: "",
         remarks: "",
       });
 
@@ -174,7 +199,7 @@ function ReceiveForm({ onSubmitSuccess }) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Blood Type dropdown */}
         <div className="space-y-2">
           <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
@@ -240,26 +265,6 @@ function ReceiveForm({ onSubmitSuccess }) {
             />
           </div>
         </div>
-
-        {/* Expiry Date */}
-        <div className="space-y-2">
-          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-            Expiry Date
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-              <MdDateRange className="text-xl" />
-            </div>
-            <input
-              type="date"
-              name="expiry_date"
-              value={formData.expiry_date}
-              onChange={handleChange}
-              required
-              className="w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 font-medium text-sm"
-            />
-          </div>
-        </div>
       </div>
 
       {/* Component Quantities Grid */}
@@ -295,9 +300,14 @@ function ReceiveForm({ onSubmitSuccess }) {
                     {comp.label}
                   </label>
                   {formData.blood_type && (
-                    <span className="text-[9px] font-bold text-slate-400 block mt-0.5">
-                      Fee: {compPrice !== null ? `₹${compPrice}` : "Not Set"}
-                    </span>
+                    <div className="mt-0.5 space-y-0.5">
+                      <span className="text-[9px] font-bold text-slate-400 block">
+                        Fee: {compPrice !== null ? `₹${compPrice}` : "Not Set"}
+                      </span>
+                      <span className="text-[9px] font-extrabold text-rose-500 block">
+                        Expiry: {calculateExpiryDate(formData.entry_date, comp.name)}
+                      </span>
+                    </div>
                   )}
                 </div>
                 <input

@@ -25,10 +25,6 @@ export const validateCreateInventory = (req, res, next) => {
   if (!blood_type) {
     throw new ApiError(400, "Blood type is required");
   }
-  if (!expiry_date) {
-    throw new ApiError(400, "Expiry date is required");
-  }
-
   // 2. Type & range validations for blood groups
   const validBloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Other"];
   if (!validBloodGroups.includes(blood_type)) {
@@ -67,17 +63,9 @@ export const validateCreateInventory = (req, res, next) => {
 
   // 3. Date validations
   const entryDate = new Date(entry_date);
-  const expiryDate = new Date(expiry_date);
 
   if (isNaN(entryDate.getTime())) {
     throw new ApiError(400, "Entry date is invalid");
-  }
-  if (isNaN(expiryDate.getTime())) {
-    throw new ApiError(400, "Expiry date is invalid");
-  }
-
-  if (expiryDate <= entryDate) {
-    throw new ApiError(400, "Expiry date must be greater than entry date");
   }
 
   next();

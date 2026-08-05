@@ -2,16 +2,15 @@ import pool from "../config/db.js";
 import {
   getAllInventoryModel,
   createInventoryModel,
-  findExistingInventoryModel,
-  updateInventoryUnitsModel,
   findInventoryByIdModel,
   updateAvailableUnitModel,
   updateBloodPriceModel,
   getBloodPricesModel,
   getPricesByTypeModel,
+  getExpiryMonitoringModel,
+  getComponentShelfLivesModel,
 } from "../models/inventoryModel.js";
 import { createTransactionModel } from "../models/transactionModel.js";
-
 import ApiError from "../utils/ApiError.js";
 
 export const getAllInventoryService = async (page, limit) => {
@@ -21,128 +20,136 @@ export const getAllInventoryService = async (page, limit) => {
   return await getAllInventoryModel(limit, offset);
 };
 
+const FORM_FIELDS_TO_COMPONENTS = {
+  whole_blood: "WHOLE BLOOD",
+  packed_cells_sagm: "PACKED CELLS (SAGM)",
+  conc_rbcs: "CONC. RBC'S",
+  ffp: "FFP",
+  platelet_conc: "PLATELET CONC.",
+  cryo_ppt_ahf: "CRYO PPT (AHF)",
+  cpp: "CPP",
+};
+
 export const createInventoryService = async (data) => {
+  // Input validations
+  if (!data.blood_type || !data.entry_date || !data.received_by) {
+    throw new ApiError(400, "Missing required fields for inventory reception: blood_type, entry_date, received_by are required.");
+  }
+
+  // Validate blood type format
+  const BLOOD_TYPES = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Other"];
+  if (!BLOOD_TYPES.includes(data.blood_type)) {
+    throw new ApiError(400, `Invalid blood type selected: ${data.blood_type}`);
+  }
+
+  // Validate date format and ensure it's not in the future
+  const entryDateObj = new Date(data.entry_date);
+  if (isNaN(entryDateObj.getTime())) {
+    throw new ApiError(400, "Invalid collection date format.");
+  }
+  const today = new Date();
+  today.setHours(23, 59, 59, 999); // allow today
+  if (entryDateObj > today) {
+    throw new ApiError(400, "Collection date cannot be in the future.");
+  }
+
+  // Validate that at least one component has quantity > 0
+  const totalReceivedUnits = Object.keys(FORM_FIELDS_TO_COMPONENTS).reduce(
+    (sum, field) => sum + Number(data[field] || 0),
+    0
+  );
+
+  if (totalReceivedUnits === 0) {
+    throw new ApiError(400, "Please enter quantity for at least one component.");
+  }
+
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
 
-    // Compute total units received from individual components
-    const received_unit =
-      Number(data.whole_blood || 0) +
-      Number(data.packed_cells_sagm || 0) +
-      Number(data.conc_rbcs || 0) +
-      Number(data.ffp || 0) +
-      Number(data.platelet_conc || 0) +
-      Number(data.cryo_ppt_ahf || 0) +
-      Number(data.cpp || 0);
-
-    if (received_unit === 0) {
-      throw new ApiError(400, "Please enter quantity for at least one component.");
+    // 1. Fetch component shelf lives from database component_master
+    const shelfLifeRows = await getComponentShelfLivesModel(connection);
+    if (!shelfLifeRows || shelfLifeRows.length === 0) {
+      throw new ApiError(500, "Component master data could not be retrieved. Please check database seeds.");
     }
+    const shelfLifeMap = {};
+    shelfLifeRows.forEach((row) => {
+      shelfLifeMap[row.component_name] = row.shelf_life_days;
+    });
 
-    // Fetch prices from database to calculate total transaction value
+    // 2. Fetch prices from database to calculate transaction values
     const prices = await getPricesByTypeModel(data.blood_type, connection);
     const priceMap = {};
     prices.forEach((p) => {
       priceMap[p.component_type] = Number(p.price);
     });
 
-    const total_price =
-      Number(data.whole_blood || 0) * (priceMap["WHOLE BLOOD"] || 0) +
-      Number(data.packed_cells_sagm || 0) * (priceMap["PACKED CELLS (SAGM)"] || 0) +
-      Number(data.conc_rbcs || 0) * (priceMap["CONC. RBC'S"] || 0) +
-      Number(data.ffp || 0) * (priceMap["FFP"] || 0) +
-      Number(data.platelet_conc || 0) * (priceMap["PLATELET CONC."] || 0) +
-      Number(data.cryo_ppt_ahf || 0) * (priceMap["CRYO PPT (AHF)"] || 0) +
-      Number(data.cpp || 0) * (priceMap["CPP"] || 0);
+    // Generate unique batch_id for this receive operation
+    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const batch_id = `B-${dateStr}-${randomSuffix}`;
 
-    // Prepare full data payload with computed units
-    const payload = {
-      ...data,
-      received_unit,
-      government_price: priceMap["WHOLE BLOOD"] || 0, // Fallback government price for base column
-    };
+    const createdInventories = [];
 
-    const existingInventory = await findExistingInventoryModel(
-      data.blood_type,
-      data.expiry_date,
-      connection
-    );
+    // 3. Loop through components and insert separate entries (always insert all 7 components)
+    for (const [field, componentName] of Object.entries(FORM_FIELDS_TO_COMPONENTS)) {
+      const quantity = Number(data[field] || 0);
+      if (quantity < 0) {
+        throw new ApiError(400, `Quantity for ${componentName} cannot be negative.`);
+      }
 
-    if (existingInventory) {
-      const updatedReceivedUnit = existingInventory.received_unit + received_unit;
-      const updatedAvailableUnit = existingInventory.available_unit + received_unit;
+      const shelfLifeDays = shelfLifeMap[componentName] || 35;
+      const entryDate = new Date(data.entry_date);
+      entryDate.setDate(entryDate.getDate() + shelfLifeDays);
+      const expiry_date = entryDate.toISOString().split("T")[0];
 
-      const updatedComponents = {
-        whole_blood: Number(existingInventory.whole_blood) + Number(data.whole_blood || 0),
-        packed_cells_sagm: Number(existingInventory.packed_cells_sagm) + Number(data.packed_cells_sagm || 0),
-        conc_rbcs: Number(existingInventory.conc_rbcs) + Number(data.conc_rbcs || 0),
-        ffp: Number(existingInventory.ffp) + Number(data.ffp || 0),
-        platelet_conc: Number(existingInventory.platelet_conc) + Number(data.platelet_conc || 0),
-        cryo_ppt_ahf: Number(existingInventory.cryo_ppt_ahf) + Number(data.cryo_ppt_ahf || 0),
-        cpp: Number(existingInventory.cpp) + Number(data.cpp || 0),
+      const componentPrice = priceMap[componentName] || 0;
+      const total_price = quantity * componentPrice;
+
+      const payload = {
+        batch_id,
+        entry_date: data.entry_date,
+        received_by: data.received_by,
+        blood_type: data.blood_type,
+        component_type: componentName,
+        government_price: componentPrice,
+        received_unit: quantity,
+        expiry_date,
+        remarks: data.remarks
       };
 
-      await updateInventoryUnitsModel(
-        existingInventory.id,
-        updatedReceivedUnit,
-        updatedAvailableUnit,
-        updatedComponents,
-        connection
-      );
+      const result = await createInventoryModel(payload, connection);
 
       await createTransactionModel(
         {
-          inventory_id: existingInventory.id,
+          inventory_id: result.insertId,
           transaction_type: "RECEIVE",
-          whole_blood: Number(data.whole_blood || 0),
-          packed_cells_sagm: Number(data.packed_cells_sagm || 0),
-          conc_rbcs: Number(data.conc_rbcs || 0),
-          ffp: Number(data.ffp || 0),
-          platelet_conc: Number(data.platelet_conc || 0),
-          cryo_ppt_ahf: Number(data.cryo_ppt_ahf || 0),
-          cpp: Number(data.cpp || 0),
-          units: received_unit,
+          units: quantity,
           total_price: total_price,
-          expiry_date: existingInventory.expiry_date,
+          expiry_date: expiry_date,
           issued_by: data.received_by,
           remarks: data.remarks,
         },
         connection
       );
 
-      await connection.commit();
-      return {
-        message: "Inventory updated successfully",
-      };
+      createdInventories.push({
+        id: result.insertId,
+        component_type: componentName,
+        received_unit: quantity,
+        expiry_date,
+      });
     }
 
-    const result = await createInventoryModel(payload, connection);
-
-    await createTransactionModel(
-      {
-        inventory_id: result.insertId,
-        transaction_type: "RECEIVE",
-        whole_blood: Number(data.whole_blood || 0),
-        packed_cells_sagm: Number(data.packed_cells_sagm || 0),
-        conc_rbcs: Number(data.conc_rbcs || 0),
-        ffp: Number(data.ffp || 0),
-        platelet_conc: Number(data.platelet_conc || 0),
-        cryo_ppt_ahf: Number(data.cryo_ppt_ahf || 0),
-        cpp: Number(data.cpp || 0),
-        units: received_unit,
-        total_price: total_price,
-        expiry_date: data.expiry_date,
-        issued_by: data.received_by,
-        remarks: data.remarks,
-      },
-      connection
-    );
-
     await connection.commit();
-    return result;
+    return {
+      message: "Inventory and transaction logs saved successfully",
+      batch_id,
+      records: createdInventories,
+    };
   } catch (error) {
     await connection.rollback();
+    console.error(`[Creation Error] Transaction rollback executed for createInventoryService. Details:`, error.message);
     throw error;
   } finally {
     connection.release();
@@ -150,60 +157,55 @@ export const createInventoryService = async (data) => {
 };
 
 export const issueBloodService = async (data) => {
+  // Input validations
+  if (!data.inventory_id || !data.component_type || !data.issued_unit || !data.issued_by) {
+    throw new ApiError(400, "Missing required parameters for blood issuing: inventory_id, component_type, issued_unit, issued_by are all required.");
+  }
+
+  const issued_unit = Number(data.issued_unit);
+  if (isNaN(issued_unit) || issued_unit <= 0) {
+    throw new ApiError(400, "Issued unit quantity must be a positive number.");
+  }
+
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
 
-    const inventory = await findInventoryByIdModel(data.inventory_id, connection);
+    // SCALABLE ARCHITECTURE: Acquire Row-level Lock (FOR UPDATE) to prevent concurrency race conditions (double issue)
+    const [rows] = await connection.query(
+      `SELECT * FROM blood_inventory WHERE id = ? FOR UPDATE`,
+      [data.inventory_id]
+    );
+    const inventory = rows[0];
 
     if (!inventory) {
-      throw new ApiError(404, "Inventory not found");
+      throw new ApiError(404, "Inventory batch record not found.");
     }
 
-    const componentColumnMap = {
-      "WHOLE BLOOD": "whole_blood",
-      "PACKED CELLS (SAGM)": "packed_cells_sagm",
-      "CONC. RBC'S": "conc_rbcs",
-      "FFP": "ffp",
-      "PLATELET CONC.": "platelet_conc",
-      "CRYO PPT (AHF)": "cryo_ppt_ahf",
-      "CPP": "cpp",
-    };
-
-    const colName = componentColumnMap[data.component_type];
-    if (!colName) {
-      throw new ApiError(400, "Invalid component type");
+    if (inventory.component_type !== data.component_type) {
+      throw new ApiError(400, `Batch component type mismatch. Batch is ${inventory.component_type}, requested ${data.component_type}`);
     }
 
-    const availableComponentStock = Number(inventory[colName] || 0);
-    const issued_unit = Number(data.issued_unit);
+    const availableComponentStock = Number(inventory.available_unit);
 
     if (availableComponentStock < issued_unit) {
       throw new ApiError(400, `Insufficient stock for ${data.component_type}. Only ${availableComponentStock} units available.`);
     }
 
-    const updatedAvailableUnit = Number(inventory.available_unit) - issued_unit;
-    const updatedComponentStock = availableComponentStock - issued_unit;
+    const updatedAvailableUnit = availableComponentStock - issued_unit;
 
     // Update available units in DB
     await connection.query(
       `
       UPDATE blood_inventory
-      SET 
-        available_unit = ?,
-        ${colName} = ?
+      SET available_unit = ?
       WHERE id = ?
       `,
-      [updatedAvailableUnit, updatedComponentStock, inventory.id]
+      [updatedAvailableUnit, inventory.id]
     );
 
-    // Fetch the price for the specific component to calculate transaction total_price
-    const [priceRow] = await connection.query(
-      `SELECT price FROM blood_prices WHERE blood_type = ? AND component_type = ? LIMIT 1`,
-      [inventory.blood_type, data.component_type]
-    );
-    const component_price = priceRow ? Number(priceRow[0]?.price || priceRow.price || 0) : 0;
-    const total_price = issued_unit * component_price;
+    // Calculate transaction total_price
+    const total_price = issued_unit * Number(inventory.government_price || 0);
 
     const transactionData = {
       inventory_id: inventory.id,
@@ -215,20 +217,13 @@ export const issueBloodService = async (data) => {
       remarks: data.remarks,
     };
 
-    // Initialize all components to 0
-    Object.keys(componentColumnMap).forEach((key) => {
-      const col = componentColumnMap[key];
-      transactionData[col] = 0;
-    });
-    // Set quantity for the issued component
-    transactionData[colName] = issued_unit;
-
     await createTransactionModel(transactionData, connection);
 
     await connection.commit();
     return "Blood issued successfully";
   } catch (error) {
     await connection.rollback();
+    console.error(`[Concurrency Error] Transaction rollback executed for issueBloodService. Details:`, error.message);
     throw error;
   } finally {
     connection.release();
@@ -241,4 +236,8 @@ export const getBloodPricesService = async () => {
 
 export const updateBloodPriceService = async (blood_type, component_type, new_price) => {
   return await updateBloodPriceModel(blood_type, component_type, new_price);
+};
+
+export const getExpiryMonitoringService = async () => {
+  return await getExpiryMonitoringModel();
 };

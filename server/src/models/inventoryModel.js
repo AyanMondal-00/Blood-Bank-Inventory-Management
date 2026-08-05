@@ -5,16 +5,11 @@ export const getAllInventoryModel = async (limit, offset, connection = pool) => 
     `
     SELECT
       id,
+      batch_id,
       entry_date,
       received_by,
       blood_type,
-      whole_blood,
-      packed_cells_sagm,
-      conc_rbcs,
-      ffp,
-      platelet_conc,
-      cryo_ppt_ahf,
-      cpp,
+      component_type,
       government_price,
       received_unit,
       available_unit,
@@ -34,16 +29,11 @@ export const getAllInventoryModel = async (limit, offset, connection = pool) => 
 
 export const createInventoryModel = async (data, connection = pool) => {
   const {
+    batch_id,
     entry_date,
     received_by,
     blood_type,
-    whole_blood,
-    packed_cells_sagm,
-    conc_rbcs,
-    ffp,
-    platelet_conc,
-    cryo_ppt_ahf,
-    cpp,
+    component_type,
     government_price,
     received_unit, 
     expiry_date,
@@ -52,34 +42,24 @@ export const createInventoryModel = async (data, connection = pool) => {
 
   const [result] = await connection.query(
     `INSERT INTO blood_inventory (
+      batch_id,
       entry_date,
       received_by,
       blood_type,
-      whole_blood,
-      packed_cells_sagm,
-      conc_rbcs,
-      ffp,
-      platelet_conc,
-      cryo_ppt_ahf,
-      cpp,
+      component_type,
       government_price,
       received_unit,
       available_unit,
       expiry_date,
       remarks
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
+      batch_id,
       entry_date,
       received_by,
       blood_type,
-      whole_blood || 0,
-      packed_cells_sagm || 0,
-      conc_rbcs || 0,
-      ffp || 0,
-      platelet_conc || 0,
-      cryo_ppt_ahf || 0,
-      cpp || 0,
+      component_type,
       government_price || 0,
       received_unit,
       received_unit, // available_unit defaults to received_unit on creation
@@ -91,72 +71,23 @@ export const createInventoryModel = async (data, connection = pool) => {
   return result;
 };
 
-export const findExistingInventoryModel = async (
-  blood_type,
-  expiry_date,
-  connection = pool
-) => {
+export const getExpiryMonitoringModel = async (connection = pool) => {
   const [rows] = await connection.query(
     `
     SELECT *
     FROM blood_inventory
-    WHERE blood_type = ?
-      AND expiry_date = ?
-    LIMIT 1
-    `,
-    [blood_type, expiry_date]
+    WHERE available_unit > 0
+    ORDER BY expiry_date ASC
+    `
   );
-
-  return rows[0];
+  return rows;
 };
 
-export const updateInventoryUnitsModel = async (
-  id,
-  received_unit,
-  available_unit,
-  component_data,
-  connection = pool
-) => {
-  const {
-    whole_blood,
-    packed_cells_sagm,
-    conc_rbcs,
-    ffp,
-    platelet_conc,
-    cryo_ppt_ahf,
-    cpp,
-  } = component_data;
-
-  const [result] = await connection.query(
-    `
-    UPDATE blood_inventory
-    SET
-      received_unit = ?,
-      available_unit = ?,
-      whole_blood = ?,
-      packed_cells_sagm = ?,
-      conc_rbcs = ?,
-      ffp = ?,
-      platelet_conc = ?,
-      cryo_ppt_ahf = ?,
-      cpp = ?
-    WHERE id = ?
-    `,
-    [
-      received_unit,
-      available_unit,
-      whole_blood,
-      packed_cells_sagm,
-      conc_rbcs,
-      ffp,
-      platelet_conc,
-      cryo_ppt_ahf,
-      cpp,
-      id,
-    ]
+export const getComponentShelfLivesModel = async (connection = pool) => {
+  const [rows] = await connection.query(
+    `SELECT component_name, shelf_life_days FROM component_master`
   );
-
-  return result;
+  return rows;
 };
 
 export const findInventoryByIdModel = async (id, connection = pool) => {

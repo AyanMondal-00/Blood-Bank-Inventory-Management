@@ -26,25 +26,15 @@ const getExpiryStatus = (expiryDateString) => {
 };
 
 function InventoryTable({ data = [] }) {
-  const getComponentsText = (item) => {
-    const parts = [];
-    if (item.whole_blood > 0) parts.push(`WHOLE BLOOD: ${item.whole_blood}`);
-    if (item.packed_cells_sagm > 0) parts.push(`PACKED CELLS (SAGM): ${item.packed_cells_sagm}`);
-    if (item.conc_rbcs > 0) parts.push(`CONC. RBC'S: ${item.conc_rbcs}`);
-    if (item.ffp > 0) parts.push(`FFP: ${item.ffp}`);
-    if (item.platelet_conc > 0) parts.push(`PLATELET CONC.: ${item.platelet_conc}`);
-    if (item.cryo_ppt_ahf > 0) parts.push(`CRYO PPT (AHF): ${item.cryo_ppt_ahf}`);
-    if (item.cpp > 0) parts.push(`CPP: ${item.cpp}`);
-    return parts.join(", ") || "N/A";
-  };
-
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left border-collapse">
         <thead>
           <tr className="bg-slate-50/70 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-wider">
+            <th className="py-4 px-6">Batch ID</th>
             <th className="py-4 px-6">Blood Type</th>
-            <th className="py-4 px-6">Stock Status (Available/Total) & Component Breakdown</th>
+            <th className="py-4 px-6">Component Type</th>
+            <th className="py-4 px-6">Stock Status (Available/Total)</th>
             <th className="py-4 px-6">Received By</th>
             <th className="py-4 px-6">Entry Date</th>
             <th className="py-4 px-6">Expiry Status</th>
@@ -61,11 +51,21 @@ function InventoryTable({ data = [] }) {
               
               return (
                 <tr key={item.id} className="hover:bg-slate-50/40 transition duration-150">
+                  {/* Batch ID */}
+                  <td className="py-4 px-6 font-mono font-bold text-slate-800 tracking-tight">
+                    {item.batch_id}
+                  </td>
+
                   {/* Blood Group */}
                   <td className="py-4 px-6">
                     <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-rose-50 border border-rose-100 text-rose-600 font-extrabold text-sm shadow-sm">
                       {item.blood_type}
                     </span>
+                  </td>
+
+                  {/* Component Type */}
+                  <td className="py-4 px-6 text-slate-800 font-extrabold uppercase">
+                    {item.component_type}
                   </td>
 
                   {/* Stock units Progress Bar */}
@@ -83,14 +83,11 @@ function InventoryTable({ data = [] }) {
                           style={{ width: `${percent}%` }}
                         ></div>
                       </div>
-                      <span className="text-[10px] text-slate-400 font-extrabold block truncate max-w-[200px]" title={getComponentsText(item)}>
-                        {getComponentsText(item)}
-                      </span>
                     </div>
                   </td>
 
                   {/* Location */}
-                  <td className="py-4 px-6 text-slate-600 max-w-[150px] truncate" title={item.received_by}>
+                  <td className="py-4 px-6 text-slate-650 max-w-[150px] truncate" title={item.received_by}>
                     {item.received_by || "N/A"}
                   </td>
 
@@ -113,7 +110,7 @@ function InventoryTable({ data = [] }) {
 
                   {/* Price */}
                   <td className="py-4 px-6 text-right font-bold text-slate-800">
-                    ₹{item.government_price.toLocaleString("en-IN")}
+                    ₹{Number(item.government_price || 0).toLocaleString("en-IN")}
                   </td>
 
                   {/* Remarks */}
@@ -125,7 +122,7 @@ function InventoryTable({ data = [] }) {
             })
           ) : (
             <tr>
-              <td colSpan="7" className="py-12 px-6 text-center text-slate-400 font-normal">
+              <td colSpan="9" className="py-12 px-6 text-center text-slate-400 font-normal">
                 <MdLayers className="text-4xl text-slate-300 mx-auto mb-3" />
                 No blood records match your search settings.
               </td>

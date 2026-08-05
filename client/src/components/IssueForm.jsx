@@ -65,9 +65,8 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
   // Filter batches of selected blood type that have positive stock of the selected component
   const filteredBatches = useMemo(() => {
     if (!selectedBloodType || !selectedComponent) return [];
-    const colName = COMPONENT_COLUMN_MAP[selectedComponent];
     return batches.filter(
-      (b) => b.blood_type === selectedBloodType && Number(b[colName] || 0) > 0
+      (b) => b.blood_type === selectedBloodType && b.component_type === selectedComponent && Number(b.available_unit || 0) > 0
     );
   }, [batches, selectedBloodType, selectedComponent]);
 
@@ -155,8 +154,7 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
 
   const handleSelectBatch = (batch) => {
     setSelectedBatch(batch);
-    const colName = COMPONENT_COLUMN_MAP[selectedComponent];
-    const availableComponentStock = batch[colName] || 0;
+    const availableComponentStock = batch.available_unit || 0;
     
     setFormData((prev) => ({
       ...prev,
@@ -171,6 +169,23 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
       handleSelectBatch(sortedBatches[0]);
     }
   };
+
+  // Automatically select the first (FEFO) batch when sortedBatches changes
+  useEffect(() => {
+    if (sortedBatches.length > 0) {
+      const stillValid = selectedBatch && sortedBatches.some((b) => b.id === selectedBatch.id);
+      if (!stillValid) {
+        handleSelectBatch(sortedBatches[0]);
+      }
+    } else {
+      setSelectedBatch(null);
+      setFormData((prev) => ({
+        ...prev,
+        inventory_id: "",
+        issued_unit: "",
+      }));
+    }
+  }, [sortedBatches]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -202,8 +217,7 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
       return;
     }
 
-    const colName = COMPONENT_COLUMN_MAP[selectedComponent];
-    const availableComponentStock = selectedBatch ? Number(selectedBatch[colName] || 0) : 0;
+    const availableComponentStock = selectedBatch ? Number(selectedBatch.available_unit || 0) : 0;
 
     if (selectedBatch && units > availableComponentStock) {
       setError(`Insufficient units! Only ${availableComponentStock} units of ${selectedComponent} available in this batch.`);
@@ -414,8 +428,7 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
                           month: "short",
                           year: "numeric"
                         });
-                        const colName = COMPONENT_COLUMN_MAP[selectedComponent];
-                        const componentStock = batch[colName] || 0;
+                        const componentStock = batch.available_unit || 0;
 
                         return (
                           <tr
@@ -469,7 +482,7 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
               </div>
               <div>
                 <span className="block text-[10px] text-slate-400 uppercase tracking-widest font-extrabold">Component Stock</span>
-                <span className="text-sm font-black text-slate-800 mt-0.5 inline-block">{selectedBatch[COMPONENT_COLUMN_MAP[selectedComponent]] || 0} Bags</span>
+                <span className="text-sm font-black text-slate-800 mt-0.5 inline-block">{selectedBatch.available_unit || 0} Bags</span>
               </div>
               <div>
                 <span className="block text-[10px] text-slate-400 uppercase tracking-widest font-extrabold">Source</span>
@@ -506,10 +519,10 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
                 value={formData.issued_unit}
                 onChange={handleChange}
                 onWheel={(e) => e.target.blur()}
-                placeholder={selectedBatch ? `Max: ${selectedBatch[COMPONENT_COLUMN_MAP[selectedComponent]] || 0}` : "Select batch first"}
+                placeholder={selectedBatch ? `Max: ${selectedBatch.available_unit || 0}` : "Select batch first"}
                 required
                 min="1"
-                max={selectedBatch ? (selectedBatch[COMPONENT_COLUMN_MAP[selectedComponent]] || 0) : undefined}
+                max={selectedBatch ? (selectedBatch.available_unit || 0) : undefined}
                 disabled={!selectedBatch}
                 className="w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 font-semibold text-sm disabled:opacity-60 disabled:cursor-not-allowed appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&]:moz-appearance-textfield"
               />

@@ -20,7 +20,7 @@ function IssueBlood() {
     try {
       setFetchingBatches(true);
       setError(null);
-      const res = await inventoryApi.list();
+      const res = await inventoryApi.list(1, 1000);
       const activeBatches = (res.data || []).filter(item => item.available_unit > 0);
       setBatches(activeBatches);
     } catch (err) {

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { 
   MdArrowUpward, 
   MdArrowDownward,
@@ -6,6 +6,51 @@ import {
 } from "react-icons/md";
 
 function TransactionTable({ data = [] }) {
+  const topScrollRef = useRef(null);
+  const tableContainerRef = useRef(null);
+  const isSyncingTop = useRef(false);
+  const isSyncingTable = useRef(false);
+
+  const handleTopScroll = () => {
+    if (!isSyncingTable.current && tableContainerRef.current && topScrollRef.current) {
+      isSyncingTop.current = true;
+      tableContainerRef.current.scrollLeft = topScrollRef.current.scrollLeft;
+      requestAnimationFrame(() => {
+        isSyncingTop.current = false;
+      });
+    }
+  };
+
+  const handleTableScroll = () => {
+    if (!isSyncingTop.current && topScrollRef.current && tableContainerRef.current) {
+      isSyncingTable.current = true;
+      topScrollRef.current.scrollLeft = tableContainerRef.current.scrollLeft;
+      requestAnimationFrame(() => {
+        isSyncingTable.current = false;
+      });
+    }
+  };
+
+  useEffect(() => {
+    const updateWidth = () => {
+      if (topScrollRef.current && tableContainerRef.current) {
+        const tableEl = tableContainerRef.current.querySelector("table");
+        const topScrollInner = topScrollRef.current.querySelector("div");
+        if (tableEl && topScrollInner) {
+          topScrollInner.style.width = `${tableEl.offsetWidth}px`;
+        }
+      }
+    };
+
+    // Delay slightly to allow browser table layout calculation
+    const timeout = setTimeout(updateWidth, 100);
+    window.addEventListener("resize", updateWidth);
+    return () => {
+      clearTimeout(timeout);
+      window.removeEventListener("resize", updateWidth);
+    };
+  }, [data]);
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleString("en-IN", {
@@ -19,42 +64,36 @@ function TransactionTable({ data = [] }) {
   };
 
   return (
-    <div className="overflow-x-auto w-full border border-slate-200 rounded-2xl shadow-sm bg-white">
-      <table className="w-full text-left border-collapse min-w-[1600px] whitespace-nowrap table-fixed">
-        <colgroup>
-          <col className="w-[180px]" />
-          <col className="w-[120px]" />
-          <col className="w-[110px]" />
-          <col className="w-[130px]" />
-          <col className="w-[160px]" />
-          <col className="w-[130px]" />
-          <col className="w-[100px]" />
-          <col className="w-[140px]" />
-          <col className="w-[140px]" />
-          <col className="w-[100px]" />
-          <col className="w-[110px]" />
-          <col className="w-[130px]" />
-          <col className="w-[130px]" />
-          <col className="w-[160px]" />
-          <col className="w-[200px]" />
-        </colgroup>
-        <thead>
+    <div className="space-y-1.5 w-full">
+      {/* Top scrollbar (visible at the top of the table without scrolling down) */}
+      <div 
+        ref={topScrollRef}
+        onScroll={handleTopScroll}
+        className="always-scrollbar w-full overflow-x-auto"
+        style={{ height: "10px", minHeight: "10px" }}
+      >
+        <div style={{ height: "1px" }}></div>
+      </div>
+
+      {/* Main Table Container */}
+      <div 
+        ref={tableContainerRef}
+        onScroll={handleTableScroll}
+        className="always-scrollbar w-full border border-slate-200 rounded-2xl shadow-sm bg-white" 
+        tabIndex={0}
+      >
+      <table className="w-full text-left border-collapse whitespace-nowrap">
+        <thead className="sticky top-0 bg-slate-50 z-10 shadow-[0_1px_0_0_rgba(226,232,240,1)]">
           <tr className="bg-slate-50/80 border-b border-slate-200 text-xs font-black text-slate-500 uppercase tracking-widest">
-            <th className="py-4 px-4.5 text-center">Timestamp</th>
-            <th className="py-4 px-4.5 text-center">Tx Type</th>
-            <th className="py-4 px-4.5 text-center">Blood Group</th>
-            <th className="py-4 px-4.5 text-center bg-rose-50/30 text-rose-700">Whole Blood</th>
-            <th className="py-4 px-4.5 text-center bg-rose-50/30 text-rose-700">Packed Cells (SAGM)</th>
-            <th className="py-4 px-4.5 text-center bg-rose-50/30 text-rose-700">Conc. RBC's</th>
-            <th className="py-4 px-4.5 text-center bg-rose-50/30 text-rose-700">FFP</th>
-            <th className="py-4 px-4.5 text-center bg-rose-50/30 text-rose-700">Platelet Conc.</th>
-            <th className="py-4 px-4.5 text-center bg-rose-50/30 text-rose-700">Cryo PPT (AHF)</th>
-            <th className="py-4 px-4.5 text-center bg-rose-50/30 text-rose-700">CPP</th>
-            <th className="py-4 px-4.5 text-center bg-slate-100 text-slate-800 font-extrabold">Total Units</th>
-            <th className="py-4 px-4.5 text-right">Total Price</th>
-            <th className="py-4 px-4.5 text-center">Expiry Date</th>
-            <th className="py-4 px-4.5">Processed By</th>
-            <th className="py-4 px-4.5">Remarks</th>
+            <th className="py-4 px-6 text-center">Timestamp</th>
+            <th className="py-4 px-6 text-center">Tx Type</th>
+            <th className="py-4 px-6 text-center">Blood Group</th>
+            <th className="py-4 px-6">Component Type</th>
+            <th className="py-4 px-6 text-right">Units</th>
+            <th className="py-4 px-6 text-right">Total Price</th>
+            <th className="py-4 px-6 text-center">Expiry Date</th>
+            <th className="py-4 px-6">Processed By</th>
+            <th className="py-4 px-6">Remarks</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 text-xs font-semibold text-slate-700">
@@ -70,10 +109,10 @@ function TransactionTable({ data = [] }) {
               return (
                 <tr key={t.id} className="hover:bg-slate-50/50 transition duration-150">
                   {/* Timestamp */}
-                  <td className="py-4 px-4.5 text-slate-400 font-mono text-center">{formatDate(t.created_at)}</td>
+                  <td className="py-4 px-6 text-slate-400 font-mono text-center">{formatDate(t.created_at)}</td>
                   
                   {/* Type Badge */}
-                  <td className="py-4 px-4.5 text-center">
+                  <td className="py-4 px-6 text-center">
                     <span className={`inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black ${
                       isReceive 
                         ? "bg-emerald-50 text-emerald-700 border border-emerald-100" 
@@ -93,70 +132,40 @@ function TransactionTable({ data = [] }) {
                     </span>
                   </td>
 
+
+
                   {/* Blood Type */}
-                  <td className="py-4 px-4.5 text-center">
+                  <td className="py-4 px-6 text-center">
                     <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-850 font-black border border-slate-200">
                       {t.blood_type || "N/A"}
                     </span>
                   </td>
 
-                  {/* Component Columns (7 columns) */}
-                  <td className="py-4 px-4.5 text-center font-bold bg-rose-50/10">
-                    <span className={t.whole_blood > 0 ? "text-slate-900 font-black" : "text-slate-300 font-normal"}>
-                      {t.whole_blood > 0 ? `${isReceive ? "+" : "-"}${t.whole_blood}` : "0"}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4.5 text-center font-bold bg-rose-50/10">
-                    <span className={t.packed_cells_sagm > 0 ? "text-slate-900 font-black" : "text-slate-300 font-normal"}>
-                      {t.packed_cells_sagm > 0 ? `${isReceive ? "+" : "-"}${t.packed_cells_sagm}` : "0"}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4.5 text-center font-bold bg-rose-50/10">
-                    <span className={t.conc_rbcs > 0 ? "text-slate-900 font-black" : "text-slate-300 font-normal"}>
-                      {t.conc_rbcs > 0 ? `${isReceive ? "+" : "-"}${t.conc_rbcs}` : "0"}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4.5 text-center font-bold bg-rose-50/10">
-                    <span className={t.ffp > 0 ? "text-slate-900 font-black" : "text-slate-300 font-normal"}>
-                      {t.ffp > 0 ? `${isReceive ? "+" : "-"}${t.ffp}` : "0"}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4.5 text-center font-bold bg-rose-50/10">
-                    <span className={t.platelet_conc > 0 ? "text-slate-900 font-black" : "text-slate-300 font-normal"}>
-                      {t.platelet_conc > 0 ? `${isReceive ? "+" : "-"}${t.platelet_conc}` : "0"}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4.5 text-center font-bold bg-rose-50/10">
-                    <span className={t.cryo_ppt_ahf > 0 ? "text-slate-900 font-black" : "text-slate-300 font-normal"}>
-                      {t.cryo_ppt_ahf > 0 ? `${isReceive ? "+" : "-"}${t.cryo_ppt_ahf}` : "0"}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4.5 text-center font-bold bg-rose-50/10">
-                    <span className={t.cpp > 0 ? "text-slate-900 font-black" : "text-slate-300 font-normal"}>
-                      {t.cpp > 0 ? `${isReceive ? "+" : "-"}${t.cpp}` : "0"}
-                    </span>
+                  {/* Component Type */}
+                  <td className="py-4 px-6 text-slate-800 font-extrabold uppercase">
+                    {t.component_type || "N/A"}
                   </td>
 
                   {/* Total Units */}
-                  <td className={`py-4 px-4.5 text-center font-black text-sm bg-slate-100/50 ${
+                  <td className={`py-4 px-6 text-right font-black text-xs ${
                     isReceive ? "text-emerald-700" : "text-rose-700"
                   }`}>
-                    {isReceive ? "+" : "-"}{t.units} U
+                    {isReceive ? "+" : "-"}{t.units} Bags
                   </td>
 
                   {/* Total Price */}
-                  <td className="py-4 px-4.5 text-right font-black text-slate-800">
+                  <td className="py-4 px-6 text-right font-black text-slate-800">
                     ₹{Number(t.total_price || 0).toLocaleString("en-IN")}
                   </td>
 
                   {/* Expiry Date */}
-                  <td className="py-4 px-4.5 text-center text-slate-500 font-mono">{formattedExpiry}</td>
+                  <td className="py-4 px-6 text-center text-slate-500 font-mono">{formattedExpiry}</td>
                   
                   {/* Processed By */}
-                  <td className="py-4 px-4.5 text-slate-600 truncate" title={t.issued_by}>{t.issued_by || "System"}</td>
+                  <td className="py-4 px-6 text-slate-650 truncate" title={t.issued_by}>{t.issued_by || "System"}</td>
                   
                   {/* Remarks */}
-                  <td className="py-4 px-4.5 text-slate-400 font-normal italic truncate" title={t.remarks}>
+                  <td className="py-4 px-6 text-slate-400 font-normal italic truncate" title={t.remarks}>
                     {t.remarks || "-"}
                   </td>
                 </tr>
@@ -164,7 +173,7 @@ function TransactionTable({ data = [] }) {
             })
           ) : (
             <tr>
-              <td colSpan="15" className="py-12 px-6 text-center text-slate-400 font-normal">
+              <td colSpan="9" className="py-12 px-6 text-center text-slate-400 font-normal">
                 <MdHistory className="text-4xl text-slate-300 mx-auto mb-3" />
                 No transactions match your search/filter settings.
               </td>
@@ -173,6 +182,7 @@ function TransactionTable({ data = [] }) {
         </tbody>
       </table>
     </div>
+  </div>
   );
 }
 

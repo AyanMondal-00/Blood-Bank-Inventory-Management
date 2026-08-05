@@ -101,24 +101,12 @@ function Transactions() {
       }
 
       const totalVal = t.total_price ? `${t.total_price} Rs` : "0 Rs";
-
-      const getComponentsText = (tx) => {
-        const parts = [];
-        if (tx.whole_blood > 0) parts.push(`WHOLE BLOOD (${tx.whole_blood} U)`);
-        if (tx.packed_cells_sagm > 0) parts.push(`PACKED CELLS (SAGM) (${tx.packed_cells_sagm} U)`);
-        if (tx.conc_rbcs > 0) parts.push(`CONC. RBC'S (${tx.conc_rbcs} U)`);
-        if (tx.ffp > 0) parts.push(`FFP (${tx.ffp} U)`);
-        if (tx.platelet_conc > 0) parts.push(`PLATELET CONC. (${tx.platelet_conc} U)`);
-        if (tx.cryo_ppt_ahf > 0) parts.push(`CRYO PPT (AHF) (${tx.cryo_ppt_ahf} U)`);
-        if (tx.cpp > 0) parts.push(`CPP (${tx.cpp} U)`);
-        return parts.join(", ") || "N/A";
-      };
       
       return [
         formattedDate,
         t.transaction_type,
         t.blood_type || "N/A",
-        getComponentsText(t),
+        t.component_type || "N/A",
         `${isReceive ? "+" : "-"}${t.units} U`,
         totalVal,
         expiry,
@@ -148,7 +136,9 @@ function Transactions() {
   // Filter logic (Advanced)
   const filteredTransactions = transactions.filter((t) => {
     const matchesSearch = 
-      (t.received_by?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+      (t.blood_type?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+      (t.component_type?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+      (t.batch_id?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
       (t.issued_by?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
       (t.remarks?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
     
@@ -276,7 +266,7 @@ function Transactions() {
             </div>
             <input
               type="text"
-              placeholder="Search by remarks, receiver, or issuer..."
+              placeholder="Search Blood Group, Component, Batch ID, Operator or Remarks..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 font-medium"
@@ -369,30 +359,7 @@ function Transactions() {
       </div>
 
       {/* Live Business Calculations Summary */}
-      {isAdmin && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {/* Total Value */}
-          <div className="bg-white border border-slate-100 p-5 rounded-2xl shadow-sm flex flex-col justify-between hover:border-slate-200 transition">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Value</span>
-            <span className="text-xl font-black text-slate-800 mt-1">{stats.total.toLocaleString("en-US")} Rs</span>
-          </div>
-          {/* Total Received Value */}
-          <div className="bg-white border border-slate-100 p-5 rounded-2xl shadow-sm flex flex-col justify-between hover:border-slate-200 transition">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Received Value</span>
-            <span className="text-xl font-black text-emerald-600 mt-1">{stats.received.toLocaleString("en-US")} Rs</span>
-          </div>
-          {/* Total Issued Value */}
-          <div className="bg-white border border-slate-100 p-5 rounded-2xl shadow-sm flex flex-col justify-between hover:border-slate-200 transition">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Issued Value</span>
-            <span className="text-xl font-black text-rose-600 mt-1">{stats.issued.toLocaleString("en-US")} Rs</span>
-          </div>
-          {/* Log Count */}
-          <div className="bg-white border border-slate-100 p-5 rounded-2xl shadow-sm flex flex-col justify-between hover:border-slate-200 transition">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Filtered Records</span>
-            <span className="text-xl font-black text-slate-700 mt-1">{filteredTransactions.length} Logs</span>
-          </div>
-        </div>
-      )}
+
 
       {/* Transactions Table Card */}
       <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">

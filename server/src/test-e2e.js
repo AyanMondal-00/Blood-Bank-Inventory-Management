@@ -33,19 +33,20 @@ async function runTests() {
     assert(Array.isArray(pricesData.data), "Prices data is an array");
     assert(pricesData.data.length > 0, "Prices array is not empty");
     
-    // Save original price of O+
-    const oPlusPriceObj = pricesData.data.find(p => p.blood_type === "O+");
+    // Save original price of O+ WHOLE BLOOD
+    const oPlusPriceObj = pricesData.data.find(p => p.blood_type === "O+" && p.component_type === "WHOLE BLOOD");
     const originalOPlusPrice = oPlusPriceObj ? Number(oPlusPriceObj.price) : 500;
-    console.log(`Original O+ price: ${originalOPlusPrice} Rs`);
+    console.log(`Original O+ WHOLE BLOOD price: ${originalOPlusPrice} Rs`);
 
     // 3. Test Update Price (PUT /price)
-    console.log("\nTesting updating O+ price (/inventory/price)...");
+    console.log("\nTesting updating O+ WHOLE BLOOD price (/inventory/price)...");
     const newPrice = originalOPlusPrice + 25; // Change it temporarily
     const updateRes = await fetch(`${API_BASE}/inventory/price`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         blood_type: "O+",
+        component_type: "WHOLE BLOOD",
         new_price: newPrice
       })
     });
@@ -56,16 +57,17 @@ async function runTests() {
     // Fetch prices again to verify update
     const verifyRes = await fetch(`${API_BASE}/inventory/prices`);
     const verifyData = await verifyRes.json();
-    const updatedOPlus = verifyData.data.find(p => p.blood_type === "O+");
-    assert(updatedOPlus && Number(updatedOPlus.price) === newPrice, `O+ price successfully updated to ${newPrice} Rs`);
+    const updatedOPlus = verifyData.data.find(p => p.blood_type === "O+" && p.component_type === "WHOLE BLOOD");
+    assert(updatedOPlus && Number(updatedOPlus.price) === newPrice, `O+ WHOLE BLOOD price successfully updated to ${newPrice} Rs`);
 
     // Revert O+ price back to original
-    console.log("\nReverting O+ price back to original value...");
+    console.log("\nReverting O+ WHOLE BLOOD price back to original value...");
     await fetch(`${API_BASE}/inventory/price`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         blood_type: "O+",
+        component_type: "WHOLE BLOOD",
         new_price: originalOPlusPrice
       })
     });

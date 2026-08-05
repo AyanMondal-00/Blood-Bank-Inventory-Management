@@ -7,6 +7,7 @@ import {
   issueBloodService,
   updateBloodPriceService,
   getBloodPricesService,
+  getExpiryMonitoringService,
 } from "../services/inventoryService.js";
 
 export const getAllInventory = asyncHandler(async (req, res) => {
@@ -71,5 +72,13 @@ export const updateBloodPrice = asyncHandler(async (req, res) => {
 
   res.status(200).json(
     new ApiResponse(200, "Blood price updated successfully", result)
+  );
+});
+
+export const getExpiryMonitoring = asyncHandler(async (req, res) => {
+  const result = await getExpiryMonitoringService();
+
+  res.status(200).json(
+    new ApiResponse(200, "Expiry monitoring records fetched successfully", result)
   );
 });

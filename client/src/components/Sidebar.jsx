@@ -9,7 +9,8 @@ import {
   MdBloodtype,
   MdCurrencyRupee,
   MdLogout,
-  MdMenuOpen
+  MdMenuOpen,
+  MdHourglassEmpty
 } from "react-icons/md";
 
 const menuItems = [
@@ -32,6 +33,11 @@ const menuItems = [
     path: "/transactions",
     name: "Transaction Logs",
     icon: MdHistory,
+  },
+  {
+    path: "/expiry-monitoring",
+    name: "Expiry Monitoring",
+    icon: MdHourglassEmpty,
   },
   {
     path: "/update-price",

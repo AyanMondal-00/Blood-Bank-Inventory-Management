@@ -8,6 +8,7 @@ import ReceiveBlood from "./pages/ReceiveBlood";
 import IssueBlood from "./pages/IssueBlood";
 import Transactions from "./pages/Transactions";
 import UpdatePrice from "./pages/UpdatePrice";
+import ExpiryMonitoring from "./pages/ExpiryMonitoring";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { ProtectedRoute, AdminRoute } from "./components/AuthRoutes";
@@ -28,6 +29,7 @@ function App() {
           <Route path="receive" element={<ReceiveBlood />} />
           <Route path="issue" element={<IssueBlood />} />
           <Route path="transactions" element={<Transactions />} />
+          <Route path="expiry-monitoring" element={<ExpiryMonitoring />} />
           
           {/* Admin Only Routes */}
           <Route element={<AdminRoute />}>

@@ -74,31 +74,18 @@ export const getBloodGroupStatsModel = async () => {
       bp.blood_type,
       bp.component_type,
       bp.price,
-      COALESCE(bi.whole_blood_stock, 0) AS whole_blood_stock,
-      COALESCE(bi.packed_cells_stock, 0) AS packed_cells_stock,
-      COALESCE(bi.conc_rbcs_stock, 0) AS conc_rbcs_stock,
-      COALESCE(bi.ffp_stock, 0) AS ffp_stock,
-      COALESCE(bi.platelet_conc_stock, 0) AS platelet_conc_stock,
-      COALESCE(bi.cryo_ppt_stock, 0) AS cryo_ppt_stock,
-      COALESCE(bi.cpp_stock, 0) AS cpp_stock,
-      COALESCE(bi.totalAvailable, 0) AS totalAvailable,
+      COALESCE(bi.stock, 0) AS stock,
       COALESCE(bi.last_updated, bp.updated_at) AS last_updated
     FROM blood_prices bp
     LEFT JOIN (
       SELECT 
         blood_type,
-        SUM(whole_blood) AS whole_blood_stock,
-        SUM(packed_cells_sagm) AS packed_cells_stock,
-        SUM(conc_rbcs) AS conc_rbcs_stock,
-        SUM(ffp) AS ffp_stock,
-        SUM(platelet_conc) AS platelet_conc_stock,
-        SUM(cryo_ppt_ahf) AS cryo_ppt_stock,
-        SUM(cpp) AS cpp_stock,
-        SUM(available_unit) AS totalAvailable,
+        component_type,
+        SUM(available_unit) AS stock,
         MAX(updated_at) AS last_updated
       FROM blood_inventory
-      GROUP BY blood_type
-    ) bi ON bp.blood_type = bi.blood_type
+      GROUP BY blood_type, component_type
+    ) bi ON bp.blood_type = bi.blood_type AND bp.component_type = bi.component_type
     ORDER BY bp.blood_type ASC, bp.component_type ASC
   `);
 
@@ -108,26 +95,22 @@ export const getBloodGroupStatsModel = async () => {
     if (!groups[row.blood_type]) {
       groups[row.blood_type] = {
         blood_type: row.blood_type,
-        totalAvailable: Number(row.totalAvailable),
+        totalAvailable: 0,
         last_updated: row.last_updated,
         components: []
       };
     }
     
-    // Map stock for this specific component
-    const componentStockMap = {
-      'WHOLE BLOOD': row.whole_blood_stock,
-      'PACKED CELLS (SAGM)': row.packed_cells_stock,
-      "CONC. RBC'S": row.conc_rbcs_stock,
-      'FFP': row.ffp_stock,
-      'PLATELET CONC.': row.platelet_conc_stock,
-      'CRYO PPT (AHF)': row.cryo_ppt_stock,
-      'CPP': row.cpp_stock
-    };
+    const stock = Number(row.stock);
+    groups[row.blood_type].totalAvailable += stock;
+    
+    if (row.last_updated && (!groups[row.blood_type].last_updated || new Date(row.last_updated) > new Date(groups[row.blood_type].last_updated))) {
+      groups[row.blood_type].last_updated = row.last_updated;
+    }
     
     groups[row.blood_type].components.push({
       component_type: row.component_type,
-      stock: Number(componentStockMap[row.component_type] || 0),
+      stock: stock,
       price: Number(row.price)
     });
   });
