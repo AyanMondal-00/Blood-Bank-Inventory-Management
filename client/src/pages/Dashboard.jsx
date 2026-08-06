@@ -98,7 +98,7 @@ function Dashboard() {
         <div className="bg-slate-50 border border-slate-200 rounded-2xl p-12 text-center max-w-xl mx-auto space-y-3">
           <MdBloodtype className="text-5xl text-rose-300 mx-auto animate-pulse" />
           <h3 className="text-lg font-bold text-slate-700">No Inventory Records Found</h3>
-          <p className="text-sm text-slate-500">Please add blood bags via the "Receive Blood (Entry)" page to populate the group-wise status dashboard.</p>
+          <p className="text-sm text-slate-500">Please add blood units via the "Receive Blood (Entry)" page to populate the group-wise status dashboard.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">

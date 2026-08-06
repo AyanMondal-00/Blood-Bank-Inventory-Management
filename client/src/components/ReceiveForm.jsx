@@ -14,13 +14,13 @@ import { useAuth } from "../hooks/useAuth";
 const BLOOD_TYPES = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Other"];
 
 const COMPONENT_SHELF_LIVES = {
-  whole_blood: 35,
-  packed_cells_sagm: 42,
-  conc_rbcs: 35,
-  ffp: 365,
+  whole_blood: 34,
+  packed_cells_sagm: 41,
+  conc_rbcs: 34,
+  ffp: 364,
   platelet_conc: 5,
-  cryo_ppt_ahf: 365,
-  cpp: 365,
+  cryo_ppt_ahf: 364,
+  cpp: 364,
 };
 
 const calculateExpiryDate = (entryDateStr, name) => {
@@ -42,8 +42,20 @@ const calculateExpiryDate = (entryDateStr, name) => {
 
 function ReceiveForm({ onSubmitSuccess }) {
   const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
+
+  const getTodayStr = () => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const todayStr = getTodayStr();
+
   const [formData, setFormData] = useState({
-    entry_date: new Date().toISOString().split("T")[0],
+    entry_date: getTodayStr(),
     received_by: "",
     blood_type: "",
     whole_blood: "",
@@ -80,9 +92,10 @@ function ReceiveForm({ onSubmitSuccess }) {
       setFormData((prev) => ({
         ...prev,
         received_by: `${user.first_name} ${user.last_name}`,
+        entry_date: !isAdmin ? todayStr : prev.entry_date,
       }));
     }
-  }, [user]);
+  }, [user, isAdmin, todayStr]);
 
   // Extract component prices for the selected blood group
   const activePrices = React.useMemo(() => {
@@ -124,8 +137,18 @@ function ReceiveForm({ onSubmitSuccess }) {
       return;
     }
 
+    if (!isAdmin && formData.entry_date !== todayStr) {
+      setError("Only administrators can select past collection dates. Members can only submit for today's date.");
+      return;
+    }
+
+    if (formData.entry_date > todayStr) {
+      setError("Collection date cannot be in the future.");
+      return;
+    }
+
     if (totalUnits > 3000) {
-      setError("Total received units cannot exceed 3000 bags at a single time.");
+      setError("Total received units cannot exceed 3000 units at a single time.");
       return;
     }
 
@@ -148,7 +171,7 @@ function ReceiveForm({ onSubmitSuccess }) {
 
       // Clear Form state
       setFormData({
-        entry_date: new Date().toISOString().split("T")[0],
+        entry_date: getTodayStr(),
         received_by: user ? `${user.first_name} ${user.last_name}` : "",
         blood_type: "",
         whole_blood: "",
@@ -260,10 +283,26 @@ function ReceiveForm({ onSubmitSuccess }) {
               name="entry_date"
               value={formData.entry_date}
               onChange={handleChange}
+              min={isAdmin ? undefined : todayStr}
+              max={todayStr}
+              readOnly={!isAdmin}
               required
-              className="w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition duration-200 font-medium text-sm"
+              className={`w-full pl-11 pr-4 py-3 border rounded-xl text-slate-700 focus:outline-none transition duration-200 font-medium text-sm ${
+                !isAdmin
+                  ? "bg-slate-100 border-slate-200 cursor-not-allowed text-slate-500"
+                  : "bg-slate-50/50 border-slate-200 focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+              }`}
             />
           </div>
+          {isAdmin ? (
+            <p className="text-[10px] font-semibold text-emerald-600">
+              Admin access: You can select today or past collection dates.
+            </p>
+          ) : (
+            <p className="text-[10px] font-semibold text-slate-400">
+              Member access: Restricted to today's collection date only.
+            </p>
+          )}
         </div>
       </div>
 
@@ -271,7 +310,7 @@ function ReceiveForm({ onSubmitSuccess }) {
       <div className="border-t border-slate-100 pt-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
           <h4 className="text-xs font-black text-rose-600 uppercase tracking-wider">
-            Blood Component Quantities (Bags)
+            Blood Component Quantities (Units)
           </h4>
           {formData.blood_type && activePrices.length > 0 && (
             <span className="text-[10px] font-semibold text-slate-400 flex items-center gap-1">

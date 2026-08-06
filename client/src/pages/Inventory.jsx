@@ -87,7 +87,7 @@ function Inventory() {
             <MdArrowBack className="text-xl" />
           </button>
           <div>
-            <p className="text-xs text-slate-500 font-medium">Verify blood bag batch details, available volume and expiry timeline.</p>
+            <p className="text-xs text-slate-500 font-medium">Verify blood unit batch details, available volume and expiry timeline.</p>
           </div>
         </div>
 

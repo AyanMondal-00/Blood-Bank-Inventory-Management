@@ -150,7 +150,7 @@ function TransactionTable({ data = [] }) {
                   <td className={`py-4 px-6 text-right font-black text-xs ${
                     isReceive ? "text-emerald-700" : "text-rose-700"
                   }`}>
-                    {isReceive ? "+" : "-"}{t.units} Bags
+                    {isReceive ? "+" : "-"}{t.units} Units
                   </td>
 
                   {/* Total Price */}

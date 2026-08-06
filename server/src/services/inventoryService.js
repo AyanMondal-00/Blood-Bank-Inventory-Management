@@ -30,7 +30,7 @@ const FORM_FIELDS_TO_COMPONENTS = {
   cpp: "CPP",
 };
 
-export const createInventoryService = async (data) => {
+export const createInventoryService = async (data, user) => {
   // Input validations
   if (!data.blood_type || !data.entry_date || !data.received_by) {
     throw new ApiError(400, "Missing required fields for inventory reception: blood_type, entry_date, received_by are required.");
@@ -47,10 +47,19 @@ export const createInventoryService = async (data) => {
   if (isNaN(entryDateObj.getTime())) {
     throw new ApiError(400, "Invalid collection date format.");
   }
-  const today = new Date();
-  today.setHours(23, 59, 59, 999); // allow today
-  if (entryDateObj > today) {
+  
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const todayStr = `${year}-${month}-${day}`;
+
+  if (data.entry_date > todayStr) {
     throw new ApiError(400, "Collection date cannot be in the future.");
+  }
+
+  if (data.entry_date < todayStr && user && user.role !== "admin") {
+    throw new ApiError(403, "Only administrators can select past collection dates. Members can only submit for today's date.");
   }
 
   // Validate that at least one component has quantity > 0

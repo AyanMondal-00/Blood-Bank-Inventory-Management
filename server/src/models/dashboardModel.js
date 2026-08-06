@@ -75,17 +75,25 @@ export const getBloodGroupStatsModel = async () => {
       bp.component_type,
       bp.price,
       COALESCE(bi.stock, 0) AS stock,
-      COALESCE(bi.last_updated, bp.updated_at) AS last_updated
+      last_issue.last_issued_at AS last_updated
     FROM blood_prices bp
     LEFT JOIN (
       SELECT 
         blood_type,
         component_type,
-        SUM(available_unit) AS stock,
-        MAX(updated_at) AS last_updated
+        SUM(available_unit) AS stock
       FROM blood_inventory
       GROUP BY blood_type, component_type
     ) bi ON bp.blood_type = bi.blood_type AND bp.component_type = bi.component_type
+    LEFT JOIN (
+      SELECT 
+        bi.blood_type,
+        MAX(bt.created_at) AS last_issued_at
+      FROM blood_transactions bt
+      JOIN blood_inventory bi ON bt.inventory_id = bi.id
+      WHERE bt.transaction_type = 'ISSUE'
+      GROUP BY bi.blood_type
+    ) last_issue ON bp.blood_type = last_issue.blood_type
     ORDER BY bp.blood_type ASC, bp.component_type ASC
   `);
 

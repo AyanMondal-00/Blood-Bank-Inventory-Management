@@ -26,13 +26,13 @@ async function runMigration() {
     // Seed component_master data
     console.log("Seeding component_master table...");
     const componentSeeds = [
-      ["WHOLE BLOOD", 35],
-      ["PACKED CELLS (SAGM)", 42],
-      ["CONC. RBC'S", 35],
-      ["FFP", 365],
+      ["WHOLE BLOOD", 34],
+      ["PACKED CELLS (SAGM)", 41],
+      ["CONC. RBC'S", 34],
+      ["FFP", 364],
       ["PLATELET CONC.", 5],
-      ["CRYO PPT (AHF)", 365],
-      ["CPP", 365]
+      ["CRYO PPT (AHF)", 364],
+      ["CPP", 364]
     ];
     for (const [name, shelfLife] of componentSeeds) {
       await connection.query(

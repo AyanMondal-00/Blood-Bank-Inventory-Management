@@ -72,7 +72,7 @@ function InventoryTable({ data = [] }) {
                   <td className="py-4 px-6">
                     <div className="space-y-1.5 w-full max-w-[200px]">
                       <div className="flex items-center justify-between text-xs font-bold text-slate-500">
-                        <span>{item.available_unit} / {item.received_unit} Bags</span>
+                        <span>{item.available_unit} / {item.received_unit} Units</span>
                         <span>{Math.round(percent)}%</span>
                       </div>
                       <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">

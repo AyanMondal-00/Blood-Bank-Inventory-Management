@@ -212,7 +212,7 @@ function ExpiryMonitoring() {
           </button>
           <div>
             <h2 className="text-lg font-black text-slate-850 tracking-wide">Expiry Monitoring</h2>
-            <p className="text-xs text-slate-500 font-medium">Track blood batches by expiry timeline and ensure F.E.F.O dispatch integrity.</p>
+           
           </div>
         </div>
 
@@ -246,7 +246,7 @@ function ExpiryMonitoring() {
           className={`bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex flex-col justify-between hover:border-rose-450 hover:border-rose-400 hover:shadow transition duration-150 cursor-pointer border-l-4 border-l-rose-600 ${activeTab === 'EXPIRED' ? 'ring-2 ring-rose-600/20' : ''}`}
         >
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Expired Units</span>
-          <span className="text-2xl font-black text-rose-600 mt-2 block">{metrics.EXPIRED} Bags</span>
+          <span className="text-2xl font-black text-rose-600 mt-2 block">{metrics.EXPIRED} Units</span>
         </div>
 
         {/* Critical */}
@@ -255,7 +255,7 @@ function ExpiryMonitoring() {
           className={`bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex flex-col justify-between hover:border-amber-400 hover:shadow transition duration-150 cursor-pointer border-l-4 border-l-amber-500 ${activeTab === 'CRITICAL' ? 'ring-2 ring-amber-500/20' : ''}`}
         >
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Critical (≤ 5 Days)</span>
-          <span className="text-2xl font-black text-amber-500 mt-2 block">{metrics.CRITICAL} Bags</span>
+          <span className="text-2xl font-black text-amber-500 mt-2 block">{metrics.CRITICAL} Units</span>
         </div>
 
         {/* Warning */}
@@ -264,7 +264,7 @@ function ExpiryMonitoring() {
           className={`bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex flex-col justify-between hover:border-orange-400 hover:shadow transition duration-150 cursor-pointer border-l-4 border-l-orange-500 ${activeTab === 'WARNING' ? 'ring-2 ring-orange-500/20' : ''}`}
         >
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Warning (6-15 Days)</span>
-          <span className="text-2xl font-black text-orange-500 mt-2 block">{metrics.WARNING} Bags</span>
+          <span className="text-2xl font-black text-orange-500 mt-2 block">{metrics.WARNING} Units</span>
         </div>
 
         {/* Safe */}
@@ -273,7 +273,7 @@ function ExpiryMonitoring() {
           className={`bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex flex-col justify-between hover:border-emerald-400 hover:shadow transition duration-150 cursor-pointer border-l-4 border-l-emerald-500 ${activeTab === 'SAFE' ? 'ring-2 ring-emerald-500/20' : ''}`}
         >
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">{"Safe (> 15 Days)"}</span>
-          <span className="text-2xl font-black text-emerald-600 mt-2 block">{metrics.SAFE} Bags</span>
+          <span className="text-2xl font-black text-emerald-600 mt-2 block">{metrics.SAFE} Units</span>
         </div>
       </div>
 
@@ -447,7 +447,7 @@ function ExpiryMonitoring() {
 
                       {/* Available Stock */}
                       <td className="py-3.5 px-6 text-right font-black text-slate-900">
-                        {b.available_unit} Bags <span className="text-[10px] text-slate-400 font-normal">/ {b.received_unit}</span>
+                        {b.available_unit} Units <span className="text-[10px] text-slate-400 font-normal">/ {b.received_unit}</span>
                       </td>
 
                       {/* Expiry Date */}

@@ -24,7 +24,7 @@ export const getAllInventory = asyncHandler(async (req, res) => {
 });
 
 export const createInventory = asyncHandler(async (req, res) => {
-  const result = await createInventoryService(req.body);
+  const result = await createInventoryService(req.body, req.user);
 
   res
     .status(201)

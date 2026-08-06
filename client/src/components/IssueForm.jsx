@@ -454,7 +454,7 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
                             {/* Available stock */}
                             <td className="py-3.5 px-6 text-right text-slate-900 font-extrabold text-xs">
                               <span className={isSelected ? 'text-rose-600 font-black' : 'text-slate-800'}>
-                                {componentStock} Bags
+                                {componentStock} Units
                               </span>
                             </td>
                             {/* Source operator */}
@@ -482,7 +482,7 @@ function IssueForm({ batches = [], onSubmitSuccess }) {
               </div>
               <div>
                 <span className="block text-[10px] text-slate-400 uppercase tracking-widest font-extrabold">Component Stock</span>
-                <span className="text-sm font-black text-slate-800 mt-0.5 inline-block">{selectedBatch.available_unit || 0} Bags</span>
+                <span className="text-sm font-black text-slate-800 mt-0.5 inline-block">{selectedBatch.available_unit || 0} Units</span>
               </div>
               <div>
                 <span className="block text-[10px] text-slate-400 uppercase tracking-widest font-extrabold">Source</span>

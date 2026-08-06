@@ -11,13 +11,13 @@ const COMPONENTS = [
 ];
 
 const DEFAULT_PRICES = {
-  "WHOLE BLOOD": 560.00,
-  "PACKED CELLS (SAGM)": 540.00,
-  "CONC. RBC'S": 650.00,
-  "FFP": 750.00,
-  "PLATELET CONC.": 655.00,
-  "CRYO PPT (AHF)": 650.00,
-  "CPP": 750.00
+  "WHOLE BLOOD": 1600.00,
+  "PACKED CELLS (SAGM)": 1600.00,
+  "CONC. RBC'S": 1600.00,
+  "FFP": 700.00,
+  "PLATELET CONC.": 700.00,
+  "CRYO PPT (AHF)": 600.00,
+  "CPP": 300.00
 };
 
 async function seedOther() {
