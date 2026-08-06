@@ -71,27 +71,93 @@ function Dashboard() {
   }
 
   const groupStats = stats?.groupStats ?? [];
+  const revisedCharges = stats?.revisedCharges ?? [];
 
   return (
     <div className="animate-fade-in pt-1">
-      {/* Hospital Heading Banner Card */}
-      <div className="bg-white border-2 border-slate-200/80 rounded-2xl py-2.5 px-4 shadow-[0_6px_22px_rgba(15,23,42,0.1)] text-center space-y-1 mt-[-10px] mb-4 max-w-5xl mx-auto border-t-4 border-t-rose-600">
-        <h1 className="text-sm md:text-base font-black text-rose-700 tracking-wide uppercase">
-          NEHRU MEMORIAL TECHNO GLOBAL HOSPITAL BLOOD CENTRE
-        </h1>
-        <h2 className="text-[11px] md:text-xs font-bold text-slate-650">
-          (A Unit of TECHNO INDIA TECHNOLOGIES LIMITED), Barrackpore, West Bengal
-        </h2>
-        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[10px] md:text-[11px] font-semibold text-slate-500 pt-1.5 border-t border-dashed border-slate-200 mt-1.5">
-          <span>
-            Old Licence No: <strong className="text-slate-700">DL007-MB/SLA/CLAA/WB (HQ)</strong>
-          </span>
-          <span className="hidden md:inline text-slate-300">|</span>
-          <span>
-            ONDLS Licence No: <strong className="text-slate-700">BF 28C 2025 WB 000043</strong>
-          </span>
+      {/* Top Banner Row: Left Card, Center Hospital Details, Right Card */}
+      {revisedCharges.length > 0 ? (
+        <div className="w-full mb-5 mt-[-10px]">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-center">
+            {/* Left Card */}
+            <div className="lg:col-span-1 bg-white border-2 border-slate-200 rounded-2xl p-3 shadow-[0_6px_22px_rgba(15,23,42,0.06)] flex flex-col justify-center">
+              <table className="w-full text-left border-collapse text-xs md:text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 font-black text-[10px] md:text-[11px] text-slate-500 uppercase tracking-wider">
+                    <th className="pb-1.5">Products/Services</th>
+                    <th className="pb-1.5 text-right">Processing Charges</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-extrabold text-slate-800">
+                  {revisedCharges.slice(0, 2).map((item) => (
+                    <tr key={item.id} className="hover:bg-slate-50/50 transition">
+                      <td className="py-1.5 text-slate-950 font-black tracking-wide">{item.services_name}</td>
+                      <td className="py-1.5 text-right text-rose-600 font-black text-sm md:text-base">₹{item.revised_charges_per_unit}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Center Hospital Heading Banner (col-span-2) */}
+            <div className="lg:col-span-2 bg-white border-2 border-slate-200/80 rounded-2xl py-3 px-4 shadow-[0_6px_22px_rgba(15,23,42,0.1)] text-center flex flex-col justify-center space-y-1 border-t-4 border-t-rose-600">
+              <h1 className="text-sm md:text-base font-black text-rose-700 tracking-wide uppercase">
+                NEHRU MEMORIAL TECHNO GLOBAL HOSPITAL BLOOD CENTRE
+              </h1>
+              <h2 className="text-[11px] md:text-xs font-bold text-slate-650">
+                (A Unit of TECHNO INDIA TECHNOLOGIES LIMITED), Barrackpore, West Bengal
+              </h2>
+              <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[10px] md:text-[11px] font-semibold text-slate-500 pt-1.5 border-t border-dashed border-slate-200 mt-1.5">
+                <span>
+                  Old Licence: <strong className="text-slate-700">DL007-MB/SLA/CLAA/WB (HQ)</strong>
+                </span>
+                <span className="hidden md:inline text-slate-300">|</span>
+                <span>
+                  ONDLS Licence: <strong className="text-slate-700">BF 28C 2025 WB 000043</strong>
+                </span>
+              </div>
+            </div>
+
+            {/* Right Card */}
+            <div className="lg:col-span-1 bg-white border-2 border-slate-200 rounded-2xl p-3 shadow-[0_6px_22px_rgba(15,23,42,0.06)] flex flex-col justify-center">
+              <table className="w-full text-left border-collapse text-xs md:text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 font-black text-[10px] md:text-[11px] text-slate-500 uppercase tracking-wider">
+                    <th className="pb-1.5">Products/Services</th>
+                    <th className="pb-1.5 text-right">Processing Charges</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-extrabold text-slate-800">
+                  {revisedCharges.slice(2, 4).map((item) => (
+                    <tr key={item.id} className="hover:bg-slate-50/50 transition">
+                      <td className="py-1.5 text-slate-950 font-black tracking-wide">{item.services_name}</td>
+                      <td className="py-1.5 text-right text-rose-600 font-black text-sm md:text-base">₹{item.revised_charges_per_unit}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="bg-white border-2 border-slate-200/80 rounded-2xl py-2.5 px-4 shadow-[0_6px_22px_rgba(15,23,42,0.1)] text-center space-y-1 mt-[-10px] mb-4 max-w-3xl mx-auto border-t-4 border-t-rose-600">
+          <h1 className="text-sm md:text-base font-black text-rose-700 tracking-wide uppercase">
+            NEHRU MEMORIAL TECHNO GLOBAL HOSPITAL BLOOD CENTRE
+          </h1>
+          <h2 className="text-[11px] md:text-xs font-bold text-slate-650">
+            (A Unit of TECHNO INDIA TECHNOLOGIES LIMITED), Barrackpore, West Bengal
+          </h2>
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[10px] md:text-[11px] font-semibold text-slate-500 pt-1.5 border-t border-dashed border-slate-200 mt-1.5">
+            <span>
+              Old Licence: <strong className="text-slate-700">DL007-MB/SLA/CLAA/WB (HQ)</strong>
+            </span>
+            <span className="hidden md:inline text-slate-300">|</span>
+            <span>
+              ONDLS Licence: <strong className="text-slate-700">BF 28C 2025 WB 000043</strong>
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Main Stock Grid */}
       {groupStats.length === 0 ? (

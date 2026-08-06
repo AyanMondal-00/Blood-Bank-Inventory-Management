@@ -4,16 +4,18 @@ import {
   getTodayTransactionStatsModel,
   getLowStockCountModel,
   getExpiringSoonCountModel,
-  getBloodGroupStatsModel 
+  getBloodGroupStatsModel,
+  getRevisedChargesModel
 } from "../models/dashboardModel.js";
 
 export const getDashboardService = async () => {
-  const [stats, today, lowStock, expiringSoon, groupStats] = await Promise.all([
+  const [stats, today, lowStock, expiringSoon, groupStats, revisedCharges] = await Promise.all([
     getDashboardStatsModel(),
     getTodayTransactionStatsModel(),
     getLowStockCountModel(),
     getExpiringSoonCountModel(),
     getBloodGroupStatsModel(),
+    getRevisedChargesModel(),
   ]);
 
   return {
@@ -22,5 +24,6 @@ export const getDashboardService = async () => {
     ...lowStock,
     ...expiringSoon,
     groupStats,
+    revisedCharges,
   };
 };

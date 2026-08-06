@@ -157,3 +157,18 @@ export const updateBloodPriceModel = async (
 
   return result;
 };
+
+export const getRevisedChargesModel = async (connection = pool) => {
+  const [rows] = await connection.query(
+    `SELECT id, services_name, revised_charges_per_unit FROM revised_processing_charges ORDER BY id ASC`
+  );
+  return rows;
+};
+
+export const updateRevisedChargeModel = async (id, new_charge, connection = pool) => {
+  const [result] = await connection.query(
+    `UPDATE revised_processing_charges SET revised_charges_per_unit = ? WHERE id = ?`,
+    [new_charge, id]
+  );
+  return result;
+};

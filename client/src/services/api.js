@@ -54,6 +54,8 @@ export const inventoryApi = {
   updatePrice: (payload) => apiRequest('/inventory/price', { method: 'PUT', body: JSON.stringify(payload) }),
   getPrices: () => apiRequest('/inventory/prices'),
   getExpiryMonitoring: () => apiRequest('/inventory/expiry-monitoring'),
+  getRevisedCharges: () => apiRequest('/inventory/revised-charges'),
+  updateRevisedCharge: (payload) => apiRequest('/inventory/revised-charge', { method: 'PUT', body: JSON.stringify(payload) }),
 }
 
 export const transactionApi = {

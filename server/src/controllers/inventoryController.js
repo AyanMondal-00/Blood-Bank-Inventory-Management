@@ -8,6 +8,8 @@ import {
   updateBloodPriceService,
   getBloodPricesService,
   getExpiryMonitoringService,
+  getRevisedChargesService,
+  updateRevisedChargeService,
 } from "../services/inventoryService.js";
 
 export const getAllInventory = asyncHandler(async (req, res) => {
@@ -80,5 +82,27 @@ export const getExpiryMonitoring = asyncHandler(async (req, res) => {
 
   res.status(200).json(
     new ApiResponse(200, "Expiry monitoring records fetched successfully", result)
+  );
+});
+
+export const getRevisedCharges = asyncHandler(async (req, res) => {
+  const result = await getRevisedChargesService();
+
+  res.status(200).json(
+    new ApiResponse(200, "Revised processing charges fetched successfully", result)
+  );
+});
+
+export const updateRevisedCharge = asyncHandler(async (req, res) => {
+  const { id, new_charge } = req.body;
+  if (!id || new_charge === undefined || Number(new_charge) < 0) {
+    res.status(400);
+    throw new Error("Invalid service id or charge amount");
+  }
+
+  const result = await updateRevisedChargeService(id, Number(new_charge));
+
+  res.status(200).json(
+    new ApiResponse(200, "Revised processing charge updated successfully", result)
   );
 });

@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import app from "./app.js";
 import pool from "./config/db.js";
+import { startBackupScheduler } from "./utils/backupScheduler.js";
 
 dotenv.config();
 
@@ -9,6 +10,9 @@ try {
   const connection = await pool.getConnection();
   console.log("✅ Database Connected");
   connection.release();
+  
+  // Start the automated transaction exporter
+  startBackupScheduler();
 } catch (error) {
   console.error("❌ Database Connection Failed:", error.message);
 }

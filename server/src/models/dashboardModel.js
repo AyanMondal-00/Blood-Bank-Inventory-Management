@@ -125,3 +125,11 @@ export const getBloodGroupStatsModel = async () => {
 
   return Object.values(groups);
 };
+
+export const getRevisedChargesModel = async () => {
+  const [rows] = await pool.query(`
+    SELECT id, services_name, revised_charges_per_unit
+    FROM revised_processing_charges
+  `);
+  return rows;
+};

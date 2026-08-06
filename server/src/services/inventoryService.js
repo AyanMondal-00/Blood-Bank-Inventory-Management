@@ -9,6 +9,8 @@ import {
   getPricesByTypeModel,
   getExpiryMonitoringModel,
   getComponentShelfLivesModel,
+  getRevisedChargesModel,
+  updateRevisedChargeModel,
 } from "../models/inventoryModel.js";
 import { createTransactionModel } from "../models/transactionModel.js";
 import ApiError from "../utils/ApiError.js";
@@ -249,4 +251,12 @@ export const updateBloodPriceService = async (blood_type, component_type, new_pr
 
 export const getExpiryMonitoringService = async () => {
   return await getExpiryMonitoringModel();
+};
+
+export const getRevisedChargesService = async () => {
+  return await getRevisedChargesModel();
+};
+
+export const updateRevisedChargeService = async (id, new_charge) => {
+  return await updateRevisedChargeModel(id, new_charge);
 };
