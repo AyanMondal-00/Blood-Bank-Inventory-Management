@@ -1,19 +1,20 @@
 import fs from "fs";
 import path from "path";
-import { getAllTransactionsModel } from "../models/transactionModel.js";
+import { getDailyTransactionsModel } from "../models/transactionModel.js";
 
 const BACKUP_DIR = "C:\\Users\\user\\Desktop\\Blood_Bank_Backup";
 
-export const exportTransactionsBackup = async () => {
+export const exportDailyTransactionsBackup = async () => {
   try {
-    console.log("⏳ Starting scheduled auto-export of blood transactions to Excel (CSV)...");
+    console.log("⏳ Starting daily schedule auto-export of blood transactions to Excel (CSV)...");
     
     // Ensure backup directory exists
     if (!fs.existsSync(BACKUP_DIR)) {
       fs.mkdirSync(BACKUP_DIR, { recursive: true });
     }
 
-    const transactions = await getAllTransactionsModel();
+    // Query only today's transactions
+    const transactions = await getDailyTransactionsModel();
 
     // Headers matching the frontend export layout
     const headers = [
@@ -76,22 +77,44 @@ export const exportTransactionsBackup = async () => {
     ].join("\n");
 
     const dateStr = new Date().toISOString().slice(0, 10);
-    const fileName = `blood_transactions_${dateStr}.csv`;
+    const fileName = `daily_transactions_${dateStr}.csv`;
     const filePath = path.join(BACKUP_DIR, fileName);
 
     fs.writeFileSync(filePath, csvContent, "utf8");
-    console.log(`✅ Auto-export complete: Saved to ${filePath}`);
+    console.log(`✅ Daily export complete: Saved to ${filePath} (${transactions.length} records)`);
   } catch (error) {
-    console.error("❌ Failed scheduled transactions export:", error.message);
+    console.error("❌ Failed daily transactions export:", error.message);
   }
 };
 
-export const startBackupScheduler = () => {
-  // Run once immediately when the server starts
-  exportTransactionsBackup();
+// Calculate milliseconds until the next occurrence of 11:59 PM (23:59:00)
+const getMsUntil1159PM = () => {
+  const now = new Date();
+  const target = new Date(now);
+  target.setHours(23, 59, 0, 0); // Set to 23:59 today
+  
+  // If it's already past 11:59 PM today, set target to 11:59 PM tomorrow
+  if (now.getTime() >= target.getTime()) {
+    target.setDate(target.getDate() + 1);
+  }
+  
+  return target.getTime() - now.getTime();
+};
 
-  // Then schedule to run every 24 hours (86,400,000 milliseconds)
-  const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
-  setInterval(exportTransactionsBackup, TWENTY_FOUR_HOURS);
-  console.log("⏱️ Transaction Backup scheduler started (Running every 24 hours).");
+export const startBackupScheduler = () => {
+  // Run once immediately when the server starts to verify export functionality
+  exportDailyTransactionsBackup();
+
+  const scheduleNextRun = () => {
+    const delay = getMsUntil1159PM();
+    const nextRunTime = new Date(Date.now() + delay).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+    console.log(`⏱️ Daily export scheduler active. Next run at 11:59 PM (in ${Math.round(delay / 1000 / 60)} minutes, target time: ${nextRunTime}).`);
+
+    setTimeout(async () => {
+      await exportDailyTransactionsBackup();
+      scheduleNextRun(); // Recursively schedule for the next day's 11:59 PM
+    }, delay);
+  };
+
+  scheduleNextRun();
 };

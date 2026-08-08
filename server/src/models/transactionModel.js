@@ -43,3 +43,14 @@ export const getAllTransactionsModel = async () => {
   `);
   return rows;
 };
+
+export const getDailyTransactionsModel = async () => {
+  const [rows] = await pool.query(`
+    SELECT t.*, i.blood_type, i.component_type, i.batch_id
+    FROM blood_transactions t 
+    LEFT JOIN blood_inventory i ON t.inventory_id = i.id 
+    WHERE DATE(t.created_at) = CURDATE()
+    ORDER BY t.created_at DESC
+  `);
+  return rows;
+};

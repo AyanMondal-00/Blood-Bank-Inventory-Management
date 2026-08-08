@@ -38,7 +38,7 @@ CREATE TABLE `blood_inventory` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_batch` (`batch_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -47,7 +47,6 @@ CREATE TABLE `blood_inventory` (
 
 LOCK TABLES `blood_inventory` WRITE;
 /*!40000 ALTER TABLE `blood_inventory` DISABLE KEYS */;
-INSERT INTO `blood_inventory` VALUES (1,'B-20260804-0001','2026-08-04','Ayan Mondal','A+','WHOLE BLOOD',560.00,10,5,'2026-09-08','Initial inventory seed','2026-08-04 04:30:00','2026-08-05 13:42:21'),(2,'B-20260804-0002','2026-08-04','Spandan Koner','B+','PLATELET CONC.',650.00,5,3,'2026-08-09','Seeded platelet batch','2026-08-04 04:35:00','2026-08-04 04:45:00'),(3,'B-20260805-9922','2026-08-05','Abhra Podder','A+','WHOLE BLOOD',1600.00,5,5,'2026-09-08','','2026-08-05 13:07:02','2026-08-05 13:07:02'),(4,'B-20260805-9922','2026-08-05','Abhra Podder','A+','PACKED CELLS (SAGM)',1600.00,6,2,'2026-09-15','','2026-08-05 13:07:02','2026-08-05 13:07:20'),(5,'B-20260805-9922','2026-08-05','Abhra Podder','A+','CONC. RBC\'S',650.00,6,6,'2026-09-08','','2026-08-05 13:07:02','2026-08-05 13:07:02'),(6,'B-20260805-9922','2026-08-05','Abhra Podder','A+','FFP',750.00,9,9,'2027-08-04','','2026-08-05 13:07:02','2026-08-05 13:07:02'),(7,'B-20260805-9922','2026-08-05','Abhra Podder','A+','PLATELET CONC.',700.00,8,8,'2026-08-10','','2026-08-05 13:07:02','2026-08-05 13:07:02'),(8,'B-20260805-9922','2026-08-05','Abhra Podder','A+','CRYO PPT (AHF)',600.00,4,4,'2027-08-04','','2026-08-05 13:07:02','2026-08-05 13:07:02'),(9,'B-20260805-9922','2026-08-05','Abhra Podder','A+','CPP',300.00,2,2,'2027-08-04','','2026-08-05 13:07:02','2026-08-05 13:07:02'),(10,'B-20260805-5057','2026-08-02','Abhra Podder','O+','WHOLE BLOOD',560.00,7,7,'2026-09-05','','2026-08-05 13:12:47','2026-08-05 13:12:47'),(11,'B-20260805-5057','2026-08-02','Abhra Podder','O+','PACKED CELLS (SAGM)',540.00,8,8,'2026-09-12','','2026-08-05 13:12:47','2026-08-05 13:12:47'),(12,'B-20260805-5057','2026-08-02','Abhra Podder','O+','CONC. RBC\'S',650.00,6,6,'2026-09-05','','2026-08-05 13:12:47','2026-08-05 13:12:47'),(13,'B-20260805-5057','2026-08-02','Abhra Podder','O+','FFP',750.00,8,8,'2027-08-01','','2026-08-05 13:12:47','2026-08-05 13:12:47'),(14,'B-20260805-5057','2026-08-02','Abhra Podder','O+','PLATELET CONC.',655.00,5,5,'2026-08-07','','2026-08-05 13:12:47','2026-08-05 13:12:47'),(15,'B-20260805-5057','2026-08-02','Abhra Podder','O+','CRYO PPT (AHF)',650.00,4,4,'2027-08-01','','2026-08-05 13:12:47','2026-08-05 13:12:47'),(16,'B-20260805-5057','2026-08-02','Abhra Podder','O+','CPP',750.00,8,8,'2027-08-01','','2026-08-05 13:12:47','2026-08-05 13:12:47'),(17,'B-20260805-1551','2026-08-05','AYAN MONDAL','AB+','WHOLE BLOOD',560.00,5,5,'2026-09-08','','2026-08-05 13:20:32','2026-08-05 13:20:32'),(18,'B-20260805-1551','2026-08-05','AYAN MONDAL','AB+','PACKED CELLS (SAGM)',540.00,6,6,'2026-09-15','','2026-08-05 13:20:32','2026-08-05 13:20:32'),(19,'B-20260805-1551','2026-08-05','AYAN MONDAL','AB+','CONC. RBC\'S',650.00,9,9,'2026-09-08','','2026-08-05 13:20:32','2026-08-05 13:20:32'),(20,'B-20260805-1551','2026-08-05','AYAN MONDAL','AB+','FFP',750.00,2,2,'2027-08-04','','2026-08-05 13:20:32','2026-08-05 13:20:32'),(21,'B-20260805-1551','2026-08-05','AYAN MONDAL','AB+','PLATELET CONC.',655.00,9,9,'2026-08-10','','2026-08-05 13:20:32','2026-08-05 13:20:32'),(22,'B-20260805-1551','2026-08-05','AYAN MONDAL','AB+','CRYO PPT (AHF)',650.00,8,8,'2027-08-04','','2026-08-05 13:20:32','2026-08-05 13:20:32'),(23,'B-20260805-1551','2026-08-05','AYAN MONDAL','AB+','CPP',750.00,3,3,'2027-08-04','','2026-08-05 13:20:32','2026-08-05 13:20:32');
 /*!40000 ALTER TABLE `blood_inventory` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -99,7 +98,7 @@ CREATE TABLE `blood_transactions` (
   PRIMARY KEY (`id`),
   KEY `fk_inventory` (`inventory_id`),
   CONSTRAINT `fk_inventory` FOREIGN KEY (`inventory_id`) REFERENCES `blood_inventory` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -108,7 +107,6 @@ CREATE TABLE `blood_transactions` (
 
 LOCK TABLES `blood_transactions` WRITE;
 /*!40000 ALTER TABLE `blood_transactions` DISABLE KEYS */;
-INSERT INTO `blood_transactions` VALUES (1,1,'RECEIVE',10,5600.00,'2026-09-08','Ayan Mondal','Initial inventory seed','2026-08-04 10:00:00'),(2,2,'RECEIVE',5,3250.00,'2026-08-09','Spandan Koner','Seeded platelet batch','2026-08-04 10:05:00'),(3,2,'ISSUE',2,1300.00,'2026-08-09','Ayan Mondal','Issued units','2026-08-04 10:15:00'),(4,3,'RECEIVE',5,8000.00,'2026-09-08','Abhra Podder','','2026-08-05 18:37:02'),(5,4,'RECEIVE',6,9600.00,'2026-09-15','Abhra Podder','','2026-08-05 18:37:02'),(6,5,'RECEIVE',6,3900.00,'2026-09-08','Abhra Podder','','2026-08-05 18:37:02'),(7,6,'RECEIVE',9,6750.00,'2027-08-04','Abhra Podder','','2026-08-05 18:37:02'),(8,7,'RECEIVE',8,5600.00,'2026-08-10','Abhra Podder','','2026-08-05 18:37:02'),(9,8,'RECEIVE',4,2400.00,'2027-08-04','Abhra Podder','','2026-08-05 18:37:02'),(10,9,'RECEIVE',2,600.00,'2027-08-04','Abhra Podder','','2026-08-05 18:37:02'),(11,4,'ISSUE',4,6400.00,'2026-09-15','Abhra Podder','','2026-08-05 18:37:20'),(12,10,'RECEIVE',7,3920.00,'2026-09-05','Abhra Podder','','2026-08-05 18:42:47'),(13,11,'RECEIVE',8,4320.00,'2026-09-12','Abhra Podder','','2026-08-05 18:42:47'),(14,12,'RECEIVE',6,3900.00,'2026-09-05','Abhra Podder','','2026-08-05 18:42:47'),(15,13,'RECEIVE',8,6000.00,'2027-08-01','Abhra Podder','','2026-08-05 18:42:47'),(16,14,'RECEIVE',5,3275.00,'2026-08-07','Abhra Podder','','2026-08-05 18:42:47'),(17,15,'RECEIVE',4,2600.00,'2027-08-01','Abhra Podder','','2026-08-05 18:42:47'),(18,16,'RECEIVE',8,6000.00,'2027-08-01','Abhra Podder','','2026-08-05 18:42:47'),(19,17,'RECEIVE',5,2800.00,'2026-09-08','AYAN MONDAL','','2026-08-05 18:50:32'),(20,18,'RECEIVE',6,3240.00,'2026-09-15','AYAN MONDAL','','2026-08-05 18:50:32'),(21,19,'RECEIVE',9,5850.00,'2026-09-08','AYAN MONDAL','','2026-08-05 18:50:32'),(22,20,'RECEIVE',2,1500.00,'2027-08-04','AYAN MONDAL','','2026-08-05 18:50:32'),(23,21,'RECEIVE',9,5895.00,'2026-08-10','AYAN MONDAL','','2026-08-05 18:50:32'),(24,22,'RECEIVE',8,5200.00,'2027-08-04','AYAN MONDAL','','2026-08-05 18:50:32'),(25,23,'RECEIVE',3,2250.00,'2027-08-04','AYAN MONDAL','','2026-08-05 18:50:32'),(26,1,'ISSUE',5,2800.00,'2026-09-08','AYAN MONDAL','','2026-08-05 19:12:21');
 /*!40000 ALTER TABLE `blood_transactions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -136,6 +134,31 @@ LOCK TABLES `component_master` WRITE;
 /*!40000 ALTER TABLE `component_master` DISABLE KEYS */;
 INSERT INTO `component_master` VALUES (1,'WHOLE BLOOD',34),(2,'PACKED CELLS (SAGM)',41),(3,'CONC. RBC\'S',34),(4,'FFP',364),(5,'PLATELET CONC.',5),(6,'CRYO PPT (AHF)',364),(7,'CPP',364);
 /*!40000 ALTER TABLE `component_master` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `revised_processing_charges`
+--
+
+DROP TABLE IF EXISTS `revised_processing_charges`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `revised_processing_charges` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `services_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `revised_charges_per_unit` int NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `revised_processing_charges`
+--
+
+LOCK TABLES `revised_processing_charges` WRITE;
+/*!40000 ALTER TABLE `revised_processing_charges` DISABLE KEYS */;
+INSERT INTO `revised_processing_charges` VALUES (1,'Exchange Donation',800),(2,'Phenotyping',500),(3,'Blood Letting',1000),(4,'Antibody Screening',300);
+/*!40000 ALTER TABLE `revised_processing_charges` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -178,4 +201,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-06 11:55:25
+-- Dump completed on 2026-08-06 13:10:21
